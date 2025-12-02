@@ -1,0 +1,18 @@
+version: 3.9;
+
+services:
+  db: 
+    image: mongo
+    restart: always
+    container_name: campusHubTS
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: myroot
+      MONGO_INITDB_ROOT_PASSWORD: mypassword
+      MONGO_INITDB_DATABASE: campusHubTS
+    volumes:
+      - mongo_data:/data/db
+
+volumes: 
+  mongo_data:

@@ -1,0 +1,43 @@
+{
+  "name": "campusHubTS",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "",
+  "main": "./dist/index",
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsc-watch --onSuccess \"pnpm start\"",
+    "start": "node --env-file=.env dist/index"
+  },
+  "keywords": [
+    "nodejs",
+    "typescript",
+    "backend",
+    "api",
+    "express",
+    "RBAC system"
+  ],
+  "author": "Sumit Tomar",
+  "license": "ISC",
+  "packageManager": "pnpm@10.20.0",
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^24.10.1",
+    "prettier": "^3.7.3",
+    "tsc-watch": "^7.2.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^9.0.0",
+    "zod": "^4.1.13"
+  }
+}
