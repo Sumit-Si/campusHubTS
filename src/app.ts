@@ -22,4 +22,9 @@ import healthCheckRouter from "./routes/healthCheck.routes";
 app.use("/api/v1/healthCheck", healthCheckRouter);
 
 
+// Global Error Handling
+// app.use((error,req,res,next) => {
+    
+// })
+
 export default app;
