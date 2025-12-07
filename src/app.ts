@@ -19,7 +19,10 @@ app.use(cookieParser());
 
 // Custom Routes
 import healthCheckRouter from "./routes/healthCheck.routes";
+import authRouter from "./routes/auth.routes";
+
 app.use("/api/v1/healthCheck", healthCheckRouter);
+app.use("/api/v1/users", authRouter);
 
 
 // Global Error Handling
