@@ -1,17 +1,10 @@
 import mongoose, { Schema } from "mongoose";
 import { AvailableUserRoles, UserRolesEnum, type UserRole } from "../constants";
 import bcrypt from "bcryptjs";
-import { NextFunction } from "express";
+import { UserSchemaProps } from "../types/common.types";
+import jwt from "jsonwebtoken";
+import config from "../config/config";
 
-export type UserSchemaProps = {
-    username: string;
-    fullName?: string;
-    email: string;
-    password: string;
-    role: UserRole;
-    avatar?: string;
-    refreshToken?: string;
-}
 
 const userSchema = new Schema<UserSchemaProps>({
     username: {
@@ -64,14 +57,17 @@ userSchema.pre("save", async function (next) {
     this.password = await bcrypt.hash(this.password, 10);
 
     // next();
-
 });
 
 userSchema.methods.isPasswordCorrect = async function (password: string): Promise<boolean> {
     return await bcrypt.compare(password, this.password);
 }
 
-
+userSchema.methods.generateAccessToken = function (): string {
+    return jwt.sign({ id: this._id.toString(), email: this.email }, config.ACCESS_TOKEN_SECRET, {
+        expiresIn: config.ACCESS_TOKEN_EXPIRY,
+    })
+}
 
 
 export default User;

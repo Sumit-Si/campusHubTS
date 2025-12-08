@@ -8,7 +8,7 @@ const router = Router();
 // register
 router
     .route("/register")
-    .post(validate(registerValidator), register);
+    .post(validate(registerValidator),register);
 
 // login
 router

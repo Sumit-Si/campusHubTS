@@ -1,5 +1,5 @@
 import z from "zod"
-import { UserSchemaProps } from "../models/user.model"
+import { UserSchemaProps } from "../types/common.types"
 import { AvailableUserRoles, UserRolesEnum } from "../constants"
 
 const registerValidator = z.object({
@@ -12,7 +12,7 @@ const registerValidator = z.object({
 
     email: z.string()
         .nonempty("Email is required")
-        .email("Invalid email")
+        .email("Invalid email address")
         .lowercase("Email must be in lowercase")
         .trim(),
 

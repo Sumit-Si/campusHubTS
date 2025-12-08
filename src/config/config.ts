@@ -6,6 +6,10 @@ const config = {
     WHITELIST_ORIGINS,
     MONGO_URI: process.env.MONGO_URI as string,
     LOG_LEVEL: process.env.LOG_LEVEL || "info",
+    ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET as string,
+    ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY as string,
+    REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET as string,
+    REFRESH_TOKEN_EXPIRY: process.env.REFRESH_TOKEN_EXPIRY as string,
 }
 
 export default config;

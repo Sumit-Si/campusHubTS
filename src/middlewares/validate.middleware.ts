@@ -1,28 +1,25 @@
 import { ZodSchema } from "zod";
-import { asyncHandler } from "../utils/asyncHandler";
-import { logger } from "../config/winston";
-import { ApiError } from "../utils/ApiError";
+import { ApiError, ErrorDetail } from "../utils/ApiError";
+import { Request, Response, NextFunction } from "express";
 
-const validate = (schema: ZodSchema) => asyncHandler(async (req,res,next) => {
-    const parsedResult = await schema.safeParseAsync(req.body);
-    logger.error("parsedResult: ",parsedResult);
+export const validate = (schema: ZodSchema) =>
+    async (req: Request, res: Response, next: NextFunction) => {
 
-    if(!parsedResult.success) {
-        const errors = parsedResult.error.issues.map((issue) => ({
+        const validationResult = await schema.safeParseAsync(req.body);
+
+        if (validationResult.success) {
+            req.body = validationResult.data;
+            return next();
+        }
+
+        const extractedErrors: ErrorDetail[] = validationResult.error.issues.map((issue) => ({
             field: issue.path.join("."),
             message: issue.message,
         }));
 
-        throw new ApiError({statusCode: 400, message: "Validation Error", errors});
-        
-    }
-
-    // store sanitize data after validation
-    req.body = parsedResult.data;
-
-    next(); 
-});
-
-export {
-    validate,
-}
+        throw new ApiError({
+            statusCode: 422,
+            message: "Validation Error",
+            errors: extractedErrors,
+        });
+    };
