@@ -34,7 +34,21 @@ const registerValidator = z.object({
         .default(UserRolesEnum.STUDENT),
 });
 
+const loginValidator = z.object({
+    email: z.email("Invalid email address")
+        .nonempty("Email is required")
+        .lowercase("Email must be in lowercase")
+        .trim(),
+
+    password: z.string()
+        .nonempty("Password is required")
+        .min(8, "Password must be at least 8 characters long")
+        .max(20, "Password must be at most 20 characters long")
+        .trim(),
+})
+
 
 export {
     registerValidator,
+    loginValidator,
 }

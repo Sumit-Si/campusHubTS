@@ -1,9 +1,11 @@
 import { asyncHandler } from "../utils/asyncHandler";
-import type { UserLoginAction, UserRequestAction } from "../types/auth.types";
+import type { CookieOptions, UserLoginAction, UserRequestAction } from "../types/auth.types";
 import User from "../models/user.model";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { logger } from "../config/winston";
+import { generateAccessAndRefreshToken } from "../utils/token";
+import config from "../config/config";
 
 const register = asyncHandler(async (req, res) => {
 
@@ -31,9 +33,9 @@ const register = asyncHandler(async (req, res) => {
     }
 
     const createdUser = await User.findById(user._id)
-        .select("-refreshToken -password");
+        .select("-refreshToken");
 
-    logger.info("Created user: ",createdUser);
+    logger.info("Created user: ", createdUser);
 
     if (!createdUser) {
         throw new ApiError({ statusCode: 500, message: "Problem while creating user" });
@@ -48,29 +50,49 @@ const register = asyncHandler(async (req, res) => {
 });
 
 const login = asyncHandler(async (req, res) => {
-    const {email, password} = req.body as UserLoginAction;
-    console.log("req login: ",email,password);
-    
+    const { email, password } = req.body as UserLoginAction;
+    console.log("req login: ", email, password);
+
     const user = await User.findOne({
         email,
     });
-    console.log("user: ",user);
-    
+    console.log("user: ", user);
 
-    if(!user) {
-        throw new ApiError({statusCode: 400, message: "Invalid credientails"});
+
+    if (!user) {
+        throw new ApiError({ statusCode: 400, message: "Invalid credientails" });
     }
 
     const isMatch = await user.isPasswordCorrect(password);
-    logger.warn("isMatch: ",isMatch);
-    console.log("isMatch: ",isMatch);
-    if(!isMatch) {
-        throw new ApiError({statusCode: 400, message: "Invalid credientails"});
+    logger.warn("isMatch: ", isMatch);
+    console.log("isMatch: ", isMatch);
+    if (!isMatch) {
+        throw new ApiError({ statusCode: 400, message: "Invalid credientails" });
     }
 
-    
-    
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
+    logger.info("access token2: ", accessToken);
+    logger.info("refresh token2: ", refreshToken);
+    const loggedInUser = await User.findById(user._id)
+        .select("-password -refreshToken");
+
+    logger.info("loggedInUser: ", loggedInUser);
+    const options: CookieOptions = {
+        httpOnly: true,
+        secure: config.NODE_ENV === "production",
+        sameSite: "strict",
+    }
+
+    res
+        .status(200)
+        .cookie("accessToken", accessToken, { ...options, maxAge: config.ACCESS_TOKEN_MAX_AGE })
+        .cookie("refreshToken", refreshToken, { ...options, maxAge: config.REFRESH_TOKEN_MAX_AGE })
+        .json(new ApiResponse({
+            statusCode: 200,
+            data: { loggedInUser, accessToken, refreshToken },
+            message: "User logged in successfully",
+        }));
 });
 
 const logout = asyncHandler(async (req, res) => {
