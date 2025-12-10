@@ -9,24 +9,18 @@ const generateAccessAndRefreshToken = async (userId: Types.ObjectId | string) =>
     if (!user) {
         throw new ApiError({ statusCode: 404, message: "User not exists" });
     }
-
-    try {
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
 
-        logger.info("access token generated");
-        logger.info("refresh token generated");
-
         user.refreshToken = refreshToken;
         await user.save({ validateBeforeSave: false });
-
+        
+        console.log(accessToken,refreshToken,"access and refresh");
+        
         return { accessToken, refreshToken };
-    } catch (error) {
-        logger.error("Failed generating tokens", { error });
-        throw error instanceof ApiError
-            ? error
-            : new ApiError({ statusCode: 500, message: "Problem while generating refresh and access tokens" });
-    }
+        // return { accessToken, refreshToken };
+        // logger.error("Failed generating tokens", { error });
+        // throw new ApiError({ statusCode: 500, message: "Problem while generating refresh and access tokens" });
 }
 
 export {

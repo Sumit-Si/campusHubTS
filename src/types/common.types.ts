@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 import { UserRole } from "../constants";
 
 export interface UserSchemaProps extends Document  {
@@ -12,4 +12,13 @@ export interface UserSchemaProps extends Document  {
     isPasswordCorrect(password: string): Promise<boolean>;
     generateAccessToken(): string;
     generateRefreshToken(): string;
+}
+
+export type UserDocument = {
+    _id: Types.ObjectId;
+    username: string;
+    fullName?: string;
+    email: string;
+    role: UserRole;
+    avatar?: string;
 }

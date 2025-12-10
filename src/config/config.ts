@@ -1,4 +1,5 @@
 import { WHITELIST_ORIGINS } from "../constants";
+import ms from "ms";
 
 const config = {
     PORT: process.env.PORT,

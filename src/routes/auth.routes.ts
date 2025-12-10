@@ -1,7 +1,8 @@
 import { Router } from "express";
-import { login, register, logout } from "../controllers/auth.controller";
+import { login, register, logout, profile, generateApiKey, refreshAccessToken } from "../controllers/auth.controller";
 import { loginValidator, registerValidator } from "../validators";
 import { validate } from "../middlewares/validate.middleware";
+import {jwtVerify} from "../middlewares/auth.middleware";
 
 const router = Router();
 
@@ -18,6 +19,21 @@ router
 // logout
 router
     .route("/logout")
-    .post(logout);
+    .post(jwtVerify,logout);
+
+// profile
+router
+    .route("/me")
+    .get(jwtVerify, profile);
+
+// apiKey
+router
+    .route("/api-key")
+    .post(jwtVerify, generateApiKey);
+
+// refresh Access token
+router
+    .route("/refresh-access-token")
+    .get(jwtVerify, refreshAccessToken);
 
 export default router;

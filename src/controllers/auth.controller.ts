@@ -6,6 +6,8 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { logger } from "../config/winston";
 import { generateAccessAndRefreshToken } from "../utils/token";
 import config from "../config/config";
+import ApiKey from "../models/apiKey.model";
+import crypto from "crypto";
 
 const register = asyncHandler(async (req, res) => {
 
@@ -51,13 +53,10 @@ const register = asyncHandler(async (req, res) => {
 
 const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body as UserLoginAction;
-    console.log("req login: ", email, password);
 
     const user = await User.findOne({
         email,
     });
-    console.log("user: ", user);
-
 
     if (!user) {
         throw new ApiError({ statusCode: 400, message: "Invalid credientails" });
@@ -72,20 +71,17 @@ const login = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
-    logger.info("access token2: ", accessToken);
-    logger.info("refresh token2: ", refreshToken);
     const loggedInUser = await User.findById(user._id)
         .select("-password -refreshToken");
 
-    logger.info("loggedInUser: ", loggedInUser);
+
     const options: CookieOptions = {
         httpOnly: true,
         secure: config.NODE_ENV === "production",
         sameSite: "strict",
     }
 
-    res
-        .status(200)
+    res.status(200)
         .cookie("accessToken", accessToken, { ...options, maxAge: config.ACCESS_TOKEN_MAX_AGE })
         .cookie("refreshToken", refreshToken, { ...options, maxAge: config.REFRESH_TOKEN_MAX_AGE })
         .json(new ApiResponse({
@@ -96,16 +92,71 @@ const login = asyncHandler(async (req, res) => {
 });
 
 const logout = asyncHandler(async (req, res) => {
+    const options: CookieOptions = {
+        httpOnly: true,
+        secure: config.NODE_ENV === "production",
+        sameSite: "strict",
+    }
 
+    res.cookie("accessToken", "", options);
+    res.cookie("refreshToken", "", options);
+
+    res.status(200)
+        .json(new ApiResponse({
+            statusCode: 200,
+            message: "Logged out successfully",
+            data: null,
+        }));
 });
 
 const generateApiKey = asyncHandler(async (req, res) => {
+    const { expiresAt, description } = req.body as { expiresAt?: Date, description?: string };
+    const user = req.user;
 
+    const existingKey = await ApiKey.findOne({
+        createdBy: user?._id,
+    });
+
+    if (existingKey) {
+        throw new ApiError({ statusCode: 400, message: "Api key already exists" });
+    }
+
+    const key = crypto.randomBytes(32).toString("hex");
+
+    const apiKey = await ApiKey.create({
+        key,
+        expiresAt,
+        createdBy: user?._id,
+        description,
+    });
+
+    const createdApiKey = await ApiKey.findById(apiKey?._id)
+        .select("-expiresAt")
+        .populate("createdBy", "username fullName avatar");
+
+    if (!createdApiKey) {
+        throw new ApiError({ statusCode: 500, message: "Problem while generating api key" });
+    }
+
+    res.status(201)
+        .json(new ApiResponse({
+            statusCode: 200,
+            message: "Api key generated successfully",
+            data: createdApiKey,
+        }));
 });
 
 const profile = asyncHandler(async (req, res) => {
-
+    res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        message: "Profile fetched successfully",
+        data: req.user,
+    }))
 });
+
+const refreshAccessToken = asyncHandler(async (req,res) => {
+    //TODO
+})
 
 
 export {
@@ -114,4 +165,5 @@ export {
     logout,
     generateApiKey,
     profile,
+    refreshAccessToken,
 }
