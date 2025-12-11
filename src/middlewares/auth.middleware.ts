@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError";
 import { asyncHandler } from "../utils/asyncHandler";
 import jwt, { JsonWebTokenError, JwtPayload, TokenExpiredError } from "jsonwebtoken";
 
-interface DecodedJWTPayload extends JwtPayload {
+export interface DecodedJWTPayload extends JwtPayload {
     _id: string;
     iat: number;
     exp: number;

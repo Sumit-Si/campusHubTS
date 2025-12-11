@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import { type UserSchemaProps } from "./common.types";
 
 export type UserRequestAction = Omit<UserSchemaProps, "avatar" | "refreshToken">;
@@ -9,4 +10,12 @@ export type CookieOptions = {
     secure: boolean,
     sameSite: "lax" | "strict" | "none",
     maxAge?: number,
+}
+
+export type ApiKeyScheamProps = {
+    key: string;
+    expiresAt?: Date;
+    createdBy: Types.ObjectId;
+    isDeleted: boolean;
+    description?: string;
 }

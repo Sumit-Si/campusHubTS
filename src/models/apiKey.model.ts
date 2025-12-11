@@ -1,12 +1,5 @@
 import mongoose, { Schema, Types } from "mongoose";
-
-export type ApiKeyScheamProps = {
-    key: string;
-    expiresAt?: Date;
-    createdBy: Types.ObjectId;
-    isDeleted: boolean;
-    description?: string;
-}
+import { ApiKeyScheamProps } from "../types/auth.types";
 
 const apiKeySchema = new Schema<ApiKeyScheamProps>({
     key: {

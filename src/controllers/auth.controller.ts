@@ -8,6 +8,9 @@ import { generateAccessAndRefreshToken } from "../utils/token";
 import config from "../config/config";
 import ApiKey from "../models/apiKey.model";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { DecodedJWTPayload } from "../middlewares/auth.middleware";
+import { uploadOnCloudinary } from "../config/cloudinary";
 
 const register = asyncHandler(async (req, res) => {
 
@@ -21,13 +24,30 @@ const register = asyncHandler(async (req, res) => {
         throw new ApiError({ statusCode: 400, message: "User already exists" });
     }
 
+    const imageLocalPath = req.file?.path;
+    console.log("imageLocalPath: ", imageLocalPath);
+    let image;
+
+    if (imageLocalPath) {
+        try {
+            image = await uploadOnCloudinary(imageLocalPath);
+            console.log("Uploaded image", image);
+            if (!image?.url) {
+                throw new ApiError({statusCode: 400,message: "Upload succeeded without url"});
+            }
+        } catch (error) {
+            console.log("Error uploading image", error);
+            throw new ApiError({ statusCode: 400, message: "Failed to upload image" });
+        }
+    }
+
     const user = await User.create({
         username,
         email,
         fullName,
         password,
         role,
-        avatar: "",
+        avatar: image ? image.url : "",
     });
 
     if (!user) {
@@ -147,6 +167,7 @@ const generateApiKey = asyncHandler(async (req, res) => {
 });
 
 const profile = asyncHandler(async (req, res) => {
+
     res.status(200).json(new ApiResponse({
         statusCode: 200,
         message: "Profile fetched successfully",
@@ -154,8 +175,69 @@ const profile = asyncHandler(async (req, res) => {
     }))
 });
 
-const refreshAccessToken = asyncHandler(async (req,res) => {
-    //TODO
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const token: string = req.cookies.refreshToken;
+    const currentUserId = req.user?._id.toString() as string;
+
+    if (!token) {
+        throw new ApiError({ statusCode: 400, message: "Token not exists" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, config.REFRESH_TOKEN_SECRET) as DecodedJWTPayload;
+
+        if(decoded._id !== currentUserId) {
+            throw new ApiError({ statusCode: 401, message: "Invalid token" });
+        }
+
+        const user = await User.findById(decoded._id)
+            .select("-password");
+
+        if (!user) {
+            throw new ApiError({ statusCode: 401, message: "Invalid token" });
+        }
+        console.log("token: ", token, "refreshToken: ", user.refreshToken);
+
+        if (token !== user.refreshToken) {
+            throw new ApiError({ statusCode: 401, message: "Invalid token" });
+        }
+
+        const { accessToken, refreshToken: newRefreshToken } = await generateAccessAndRefreshToken(user._id);
+
+        const options: CookieOptions = {
+            httpOnly: true,
+            secure: config.NODE_ENV === "production",
+            sameSite: "strict",
+        }
+
+        res
+            .status(200)
+            .cookie("accessToken", accessToken, { ...options, maxAge: config.ACCESS_TOKEN_MAX_AGE })
+            .cookie("refreshToken", newRefreshToken, { ...options, maxAge: config.REFRESH_TOKEN_MAX_AGE })
+            .json(new ApiResponse({
+                statusCode: 200,
+                message: "Access token refreshed successfully",
+                data: { accessToken, refreshToken: newRefreshToken }
+            }));
+    } catch (error) {
+        // throw error inside the try block if exist, otherwise 500 will be thrown
+        if (error instanceof ApiError) {
+            throw error;
+        }
+
+        throw new ApiError({ statusCode: 500, message: "Problem while refreshing access token" });
+    }
+
+
+})
+
+const currentUser = asyncHandler(async (req, res) => {
+
+    res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        message: "Current user fetched successfully",
+        data: req.user,
+    }))
 })
 
 
@@ -166,4 +248,5 @@ export {
     generateApiKey,
     profile,
     refreshAccessToken,
+    currentUser,
 }

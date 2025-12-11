@@ -1,15 +1,16 @@
 import { Router } from "express";
-import { login, register, logout, profile, generateApiKey, refreshAccessToken } from "../controllers/auth.controller";
-import { loginValidator, registerValidator } from "../validators";
+import { login, register, logout, profile, generateApiKey, refreshAccessToken, currentUser } from "../controllers/auth.controller";
+import { apiKeyValidator, loginValidator, registerValidator } from "../validators";
 import { validate } from "../middlewares/validate.middleware";
 import {jwtVerify} from "../middlewares/auth.middleware";
+import { upload } from "../middlewares/multer.middleware";
 
 const router = Router();
 
 // register
 router
     .route("/register")
-    .post(validate(registerValidator),register);
+    .post(upload.single("avatar"),validate(registerValidator),register);
 
 // login
 router
@@ -29,11 +30,17 @@ router
 // apiKey
 router
     .route("/api-key")
-    .post(jwtVerify, generateApiKey);
+    .post(jwtVerify, validate(apiKeyValidator), generateApiKey);
 
 // refresh Access token
 router
     .route("/refresh-access-token")
     .get(jwtVerify, refreshAccessToken);
+
+// current user
+router
+    .route("/current-user")
+    .get(jwtVerify, currentUser);
+
 
 export default router;
