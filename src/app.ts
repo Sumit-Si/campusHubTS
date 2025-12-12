@@ -21,11 +21,12 @@ app.use(express.static("public"));
 // Custom Routes
 import healthCheckRouter from "./routes/healthCheck.routes";
 import authRouter from "./routes/auth.routes";
+import adminRouter from "./routes/admin.routes";
 import globalErrorHandler from "./utils/globalErrorHandler";
 
 app.use("/api/v1/healthCheck", healthCheckRouter);
 app.use("/api/v1/users", authRouter);
-
+app.use("/api/v1/admin", adminRouter);
 
 // Global Error Handling
 app.use(globalErrorHandler);

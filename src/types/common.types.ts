@@ -22,3 +22,11 @@ export type UserDocument = {
     role: UserRole;
     avatar?: string;
 }
+
+export type GetRequestPayloads = {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: string;
+    order?: string;
+};

@@ -64,8 +64,23 @@ const apiKeyValidator = z.object({
 });
 
 
+// ----- Admin Validations -----
+const updateUserRoleByIdValidator = z.object({
+    role: z.enum(AvailableUserRoles)
+        .default(UserRolesEnum.STUDENT)
+})
+
+const userIdParamValidator = z.object({
+    id: z.string()
+        // Mongo ObjectId pattern
+        .regex(/^[0-9a-fA-F]{24}$/, "Invalid user id")
+});
+
+
 export {
     registerValidator,
     loginValidator,
     apiKeyValidator,
+    updateUserRoleByIdValidator,
+    userIdParamValidator,
 }

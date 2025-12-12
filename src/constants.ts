@@ -13,6 +13,6 @@ export const UserRolesEnum = {
     STUDENT: "student",
 } as const;
 
-export const AvailableUserRoles = Object.values(UserRolesEnum);
+export const AvailableUserRoles = Object.values(UserRolesEnum) as readonly UserRole[];
 
 export const DB_NAME = "campusHubTS" as const;
