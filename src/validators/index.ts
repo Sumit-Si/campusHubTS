@@ -1,6 +1,6 @@
 import z from "zod"
 import { UserSchemaProps } from "../types/common.types"
-import { AvailableUserRoles, UserRolesEnum } from "../constants"
+import { AvailableMaterialTypes, AvailableUserRoles, MaterialTypesEnum, UserRolesEnum } from "../constants"
 
 // ----- Auth Validations -----
 const registerValidator = z.object({
@@ -77,10 +77,77 @@ const userIdParamValidator = z.object({
 });
 
 
+// ----- Course Validations -----
+const createCourseValidator = z.object({
+    title: z.string()
+        .nonempty("Title is required")
+        .min(5, "Title must be at least 5 characters long")
+        .max(100, "Title must be at most 100 characters long")
+        .trim(),
+
+    content: z.string()
+        .min(20, "Content must be at least 20 characters long")
+        .max(5000, "Content must be at most 5000 characters long")
+        .trim()
+        .optional(),
+
+    priceInPaise: z.number()
+        .int("Price must be an integer")
+        .min(0, "Price must be at least 0 or more")
+
+});
+
+
+// ----- Course Material Validations -----
+const createMaterialValidator = z.object({
+    name: z.string()
+        .nonempty("Name is required")
+        .min(5, "Name must be at least 5 characters long")
+        .max(200, "Name must be at most 200 characters long")
+        .trim(),
+
+    description: z.string()
+        .min(20, "Description must be at least 20 characters long")
+        .max(1000, "Description must be at most 1000 characters long")
+        .trim()
+        .optional(),
+
+    type: z.enum(AvailableMaterialTypes)
+        .default(MaterialTypesEnum.TEXT)
+        .optional(),
+
+    content: z.string()
+        .min(20, "Content must be at least 20 characters long")
+        .max(5000, "Content must be at most 5000 characters long")
+        .trim()
+        .optional(),
+
+    tags: z.array(z.string())
+        .optional(),
+
+    order: z.number()
+        .int("Order must be an integer")
+        .min(1, "Order must be at least 1 or more"),
+
+    duration: z.number()
+        .optional(),
+
+    isPreview: z.boolean()
+        .default(false)
+        .optional(),
+
+    published: z.boolean()
+        .default(false)
+        .optional(),
+
+});
+
 export {
     registerValidator,
     loginValidator,
     apiKeyValidator,
     updateUserRoleByIdValidator,
     userIdParamValidator,
+    createCourseValidator,
+    createMaterialValidator,
 }

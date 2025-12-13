@@ -29,4 +29,15 @@ export type GetRequestPayloads = {
     search?: string;
     sortBy?: string;
     order?: string;
+    createdBy?: string;
 };
+
+// Course Schema Types
+export type CourseSchemaProps = {
+    title: string;
+    content: string;
+    materials?: Types.ObjectId[];
+    priceInPaise: number;
+    creator: Types.ObjectId;
+    deletedAt: Date | null;
+}

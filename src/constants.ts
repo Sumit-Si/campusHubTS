@@ -15,4 +15,15 @@ export const UserRolesEnum = {
 
 export const AvailableUserRoles = Object.values(UserRolesEnum) as readonly UserRole[];
 
+export type MaterialType = "text" | "video" | "pdf" | "article";
+
+export const MaterialTypesEnum = {
+    TEXT: "text",
+    VIDEO: "video",
+    PDF: "pdf",
+    ARTICLE: "article",
+} as const;
+
+export const AvailableMaterialTypes = Object.values(MaterialTypesEnum) as readonly MaterialType[];
+
 export const DB_NAME = "campusHubTS" as const;
