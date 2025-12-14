@@ -1,28 +1,6 @@
 import mongoose, {Schema} from "mongoose";
-import { AvailableMaterialTypes, MaterialType, MaterialTypesEnum } from "../constants";
-
-interface MaterialFileUpload {
-    fileUrl: string;
-    fileType: string;
-    size: number;
-    publicId?: string;
-}
-
-type MaterialSchemaProps = {
-    name: string;
-    description?: string;
-    type: MaterialType;
-    content?: string;       // // markdown / html (for articles)
-    uploadFiles?: MaterialFileUpload[];
-    tags?: string[];
-    order: number;
-    duration?: number;
-    creator: Schema.Types.ObjectId;
-    course: Schema.Types.ObjectId;
-    isPreview: boolean;     // Free preview or not
-    published: boolean;     // Published or not [Draft Vs Published]
-    deletedAt: Date | null;
-}
+import { AvailableMaterialTypes, MaterialTypesEnum } from "../constants";
+import { MaterialSchemaProps } from "../types/common.types";
 
 const materialSchema = new Schema<MaterialSchemaProps>({
     name: {

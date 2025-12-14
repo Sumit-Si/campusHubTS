@@ -2,8 +2,9 @@ import { Router } from "express";
 import { checkRole, jwtVerify } from "../middlewares/auth.middleware";
 import { UserRolesEnum } from "../constants";
 import { validate } from "../middlewares/validate.middleware";
-import { createCourse, createMaterialByCourseId, getAllCourses } from "../controllers/course.controller";
+import { createCourse, createMaterialByCourseId, getAllCourses, getMaterialsByCourseId } from "../controllers/course.controller";
 import { createCourseValidator, createMaterialValidator } from "../validators";
+import { upload } from "../middlewares/multer.middleware";
 
 const router = Router();
 
@@ -14,12 +15,17 @@ router
         checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]),
         validate(createCourseValidator),
         createCourse)
-    .get(jwtVerify,getAllCourses);  // Public Accessible
+    .get(getAllCourses);  // Public Accessible
 
 
 // Create material by course id
 router
     .route("/:id/materials")
-    .post(jwtVerify, checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]), validate(createMaterialValidator), createMaterialByCourseId);
+    .post(jwtVerify,
+        checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]),
+        upload.array("files", 3),
+        validate(createMaterialValidator),
+        createMaterialByCourseId)
+    .get(jwtVerify,checkRole([UserRolesEnum.STUDENT, UserRolesEnum.FACULTY]), getMaterialsByCourseId);
 
 export default router;

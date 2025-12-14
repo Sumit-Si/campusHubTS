@@ -122,14 +122,21 @@ const createMaterialValidator = z.object({
         .trim()
         .optional(),
 
-    tags: z.array(z.string())
-        .optional(),
+    tags: z.union([
+        z.string()
+            .transform((val) => val.split(",").map((tag) => tag.trim())),
+        z.array(z.string())
+    ]).optional(),
 
-    order: z.number()
+    order: z.coerce
+        .number()
         .int("Order must be an integer")
         .min(1, "Order must be at least 1 or more"),
 
-    duration: z.number()
+    duration: z.coerce
+        .number()
+        .int()
+        .positive()
         .optional(),
 
     isPreview: z.boolean()

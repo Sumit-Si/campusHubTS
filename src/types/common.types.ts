@@ -1,5 +1,5 @@
 import { Document, Types } from "mongoose";
-import { UserRole } from "../constants";
+import { MaterialType, UserRole } from "../constants";
 
 export interface UserSchemaProps extends Document  {
     username: string;
@@ -24,6 +24,7 @@ export type UserDocument = {
 }
 
 export type GetRequestPayloads = {
+    id?: Types.ObjectId;
     page?: number;
     limit?: number;
     search?: string;
@@ -39,5 +40,29 @@ export type CourseSchemaProps = {
     materials?: Types.ObjectId[];
     priceInPaise: number;
     creator: Types.ObjectId;
+    deletedAt: Date | null;
+}
+
+// Material Schema Types
+export interface MaterialFileUpload {
+    fileUrl: string;
+    fileType: string;
+    size: number;
+    publicId?: string;
+}
+
+export type MaterialSchemaProps = {
+    name: string;
+    description?: string;
+    type: MaterialType;
+    content?: string;       // // markdown / html (for articles)
+    uploadFiles?: MaterialFileUpload[];
+    tags?: string[];
+    order: number;
+    duration?: number;
+    creator: Types.ObjectId;
+    course: Types.ObjectId;
+    isPreview: boolean;     // Free preview or not
+    published: boolean;     // Published or not [Draft Vs Published]
     deletedAt: Date | null;
 }
