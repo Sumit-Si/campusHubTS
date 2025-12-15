@@ -26,4 +26,15 @@ export const MaterialTypesEnum = {
 
 export const AvailableMaterialTypes = Object.values(MaterialTypesEnum) as readonly MaterialType[];
 
+// Enrollment constants
+export type EnrollmentStatus = "active" | "completed" | "dropped";
+
+export const EnrollmentStatusEnum = {
+    ACTIVE: "active",
+    COMPLETED: "completed",
+    DROPPED: "dropped",
+} as const;
+
+export const AvailableEnrollmentStatus = Object.values(EnrollmentStatusEnum) as readonly EnrollmentStatus[];
+
 export const DB_NAME = "campusHubTS" as const;

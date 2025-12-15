@@ -23,12 +23,14 @@ import healthCheckRouter from "./routes/healthCheck.routes";
 import authRouter from "./routes/auth.routes";
 import adminRouter from "./routes/admin.routes";
 import courseRouter from "./routes/course.routes";
+import enrollmentRouter from "./routes/enrollment.routes";
 import globalErrorHandler from "./utils/globalErrorHandler";
 
 app.use("/api/v1/healthCheck", healthCheckRouter);
 app.use("/api/v1/users", authRouter);
 app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/courses", courseRouter);
+app.use("/api/v1/enrollments", enrollmentRouter);
 
 // Global Error Handling
 app.use(globalErrorHandler);

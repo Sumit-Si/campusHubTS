@@ -1,6 +1,7 @@
 import z from "zod"
 import { UserSchemaProps } from "../types/common.types"
-import { AvailableMaterialTypes, AvailableUserRoles, MaterialTypesEnum, UserRolesEnum } from "../constants"
+import { AvailableEnrollmentStatus, AvailableMaterialTypes, AvailableUserRoles, EnrollmentStatusEnum, MaterialTypesEnum, UserRolesEnum } from "../constants"
+import { Types } from "mongoose";
 
 // ----- Auth Validations -----
 const registerValidator = z.object({
@@ -149,6 +150,40 @@ const createMaterialValidator = z.object({
 
 });
 
+
+// ----- Enrollment Validations -----
+const createEnrollmentValidator = z.object({
+    courseId: z.string()
+        .nonempty("Course id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid course id"
+        })
+        .trim(),
+
+    role: z.enum(AvailableUserRoles)
+        .default(UserRolesEnum.STUDENT)
+        .optional(),
+
+    remarks: z.string()
+        .min(20, "Remarks must be at least 20 characters long")
+        .max(1000, "Remarks must be at most 1000 characters long")
+        .trim()
+        .optional(),
+
+});
+
+const updateEnrollmentValidator = z.object({
+    remarks: z.string()
+        .min(20, "Remarks must be at least 20 characters long")
+        .max(1000, "Remarks must be at most 1000 characters long")
+        .trim()
+        .optional(),
+
+    status: z.enum(AvailableEnrollmentStatus)
+        .default(EnrollmentStatusEnum.ACTIVE)
+        .optional(),
+});
+
 export {
     registerValidator,
     loginValidator,
@@ -157,4 +192,6 @@ export {
     userIdParamValidator,
     createCourseValidator,
     createMaterialValidator,
+    createEnrollmentValidator,
+    updateEnrollmentValidator,
 }

@@ -66,7 +66,7 @@ const createCourse = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-    let { id,page = 1, limit = 10, search, order = "asc", sortBy = "createdAt", createdBy } = req.params as GetRequestPayloads;
+    let { page = 1, limit = 10, search, order = "asc", sortBy = "createdAt", createdBy } = req.params as GetRequestPayloads;
 
     if (page <= 1 || (limit <= 1 && limit >= 50)) {
         page = 1;
