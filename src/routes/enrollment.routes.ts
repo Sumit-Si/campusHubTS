@@ -2,8 +2,9 @@ import { Router } from "express";
 import { checkRole, jwtVerify } from "../middlewares/auth.middleware";
 import { AvailableUserRoles, UserRolesEnum } from "../constants";
 import { validate } from "../middlewares/validate.middleware";
-import { createEnrollment, getAllEnrollments, getEnrollmentById, updateEnrollmentById } from "../controllers/enrollment.controller";
+import { createEnrollment, deleteEnrollmentById, getAllEnrollments, getEnrollmentById, updateEnrollmentById } from "../controllers/enrollment.controller";
 import { createEnrollmentValidator, updateEnrollmentValidator } from "../validators";
+import { requireEnrollmentOwnership, requireFacultyCourseOwnershipByQuery } from "../middlewares/ownership.middleware";
 
 const router = Router();
 
@@ -15,7 +16,8 @@ router
         validate(createEnrollmentValidator),
         createEnrollment,
     )
-    .get(jwtVerify,
+    .get(
+        jwtVerify,
         checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]),
         getAllEnrollments,
     );
@@ -24,18 +26,24 @@ router
 // get, update and delete enrollment by id
 router
     .route("/:id")
-    .get(jwtVerify,
+    .get(
+        jwtVerify,
         checkRole(AvailableUserRoles),
+        requireEnrollmentOwnership,
         getEnrollmentById,
     )
-    .put(jwtVerify,
+    .put(
+        jwtVerify,
         checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]),
+        requireEnrollmentOwnership,
         validate(updateEnrollmentValidator),
         updateEnrollmentById,
     )
-    .put(jwtVerify,
+    .delete(
+        jwtVerify,
         checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]),
+        requireEnrollmentOwnership,
         deleteEnrollmentById,
-    )
+    );
 
 export default router;

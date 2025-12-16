@@ -1,5 +1,6 @@
 import config from "../config/config";
-import { AvailableUserRoles } from "../constants";
+import { AvailableUserRoles, UserRolesEnum } from "../constants";
+import Course from "../models/course.model";
 import User from "../models/user.model";
 import { UserDocument } from "../types/common.types";
 import { ApiError } from "../utils/ApiError";
@@ -54,6 +55,7 @@ const checkRole = (roles: typeof AvailableUserRoles) => asyncHandler(async (req,
     if(!roles.includes(user.role)) {
         throw new ApiError({statusCode: 403, message: `Forbidden!, user must be one of them ${roles.join(",")}`});
     }
+    
     console.log("user role: ", user.role);
     console.log("roles: ", roles);
     next();

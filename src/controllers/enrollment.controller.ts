@@ -49,7 +49,7 @@ const createEnrollment = asyncHandler(async (req, res) => {
 
     const createdEnrollment = await Enrollment.findById(enrollment._id)
         .populate("user", "username fullName image")
-        .populate("course", "name price");
+        .populate("course", "title price");
 
     if (!createdEnrollment) {
         throw new ApiError({
@@ -67,21 +67,34 @@ const createEnrollment = asyncHandler(async (req, res) => {
 });
 
 const getAllEnrollments = asyncHandler(async (req, res) => {
-    let { page = 1, limit = 10, order = "asc", sortBy = "createdAt", createdBy } = req.params as GetRequestPayloads;
+    const {
+        page: rawPage = "1",
+        limit: rawLimit = "10",
+        order = "asc",
+        sortBy = "createdAt",
+        createdBy,
+        courseId,
+    } = req.query as unknown as GetRequestPayloads & { courseId?: string };
 
-    if (page <= 1 || (limit <= 1 && limit >= 50)) {
-        page = 1;
-        limit = 10;
-    }
+    let page = Number(rawPage);
+    let limit = Number(rawLimit);
+
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1 || limit > 50) limit = 10;
 
     const skip = (page - 1) * limit;
-
     const sortOrder = order === "desc" ? -1 : 1;
+    const filters: QueryFilter<EnrollmentSchemaProps> = { deletedAt: null };
 
-    const filters: QueryFilter<EnrollmentSchemaProps> = {};
-
-    if (createdBy && typeof createdBy === "string") filters.user = createdBy;
-    filters.deletedAt = null;
+    if (req.user?.role === UserRolesEnum.FACULTY) {
+        if (!courseId || typeof courseId !== "string") {
+            throw new ApiError({ statusCode: 400, message: "courseId is required for faculty" });
+        }
+        filters.course = courseId;
+    } else {
+        if (createdBy && typeof createdBy === "string") filters.user = createdBy;
+        if (courseId && typeof courseId === "string") filters.course = courseId;
+    }
 
     const enrollments = await Enrollment.find(filters)
         .populate("user", "username fullName image")
@@ -111,16 +124,12 @@ const getAllEnrollments = asyncHandler(async (req, res) => {
 const getEnrollmentById = asyncHandler(async (req, res) => {
     const { id } = req.params as { id: string };
 
-    const enrollment = await Enrollment.findById(id)
+    const enrollment = await Enrollment.findOne({
+        _id: id,
+        deletedAt: null,
+    })
         .populate("user", "username fullName avatar")
         .populate("course", "title priceInPaise creator");
-
-    if (!enrollment) {
-        throw new ApiError({
-            statusCode: 404,
-            message: "Enrollment not exists",
-        });
-    }
 
     res.status(200)
         .json(new ApiResponse({
@@ -135,7 +144,10 @@ const updateEnrollmentById = asyncHandler(async (req, res) => {
 
     const { id } = req.params as { id: string };
 
-    const enrollment = await Enrollment.findById(id).select("_id status role");
+    const enrollment = await Enrollment.findOne({
+        _id: id,
+        deletedAt: null,
+    }).select("_id status role");
 
     if (!enrollment) {
         throw new ApiError({
@@ -169,7 +181,10 @@ const updateEnrollmentById = asyncHandler(async (req, res) => {
 const deleteEnrollmentById = asyncHandler(async (req, res) => {
     const { id } = req.params as { id: string };
 
-    const enrollment = await Enrollment.findById(id).select("_id status role");
+    const enrollment = await Enrollment.findOne({
+        _id: id,
+        deletedAt: null,
+    }).select("_id status role");
 
     if (!enrollment) {
         throw new ApiError({
