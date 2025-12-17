@@ -1,0 +1,142 @@
+import { QueryFilter } from "mongoose";
+import { AnnouncementStatusType, AnnouncementTargetEnum, AnnouncementTargetType, AnnouncementTypesType, UserRolesEnum } from "../constants";
+import Announcement from "../models/announcement.model";
+import Course from "../models/course.model";
+import { AnnouncementSchemaProps, GetRequestPayloads } from "../types/common.types";
+import { ApiError } from "../utils/ApiError";
+import { ApiResponse } from "../utils/ApiResponse";
+import { asyncHandler } from "../utils/asyncHandler";
+import { createNotification } from "../services/notification.service";
+
+type CreateAnnouncementRequestBody = {
+    title: string;
+    message: string;
+    type?: AnnouncementTypesType;
+    courseId?: string;
+    publishedAt?: Date;
+    expiresAt?: Date;
+    target?: AnnouncementTargetType;
+    status?: AnnouncementStatusType;
+}
+
+const createAnnouncement = asyncHandler(async (req, res) => {
+    const { title, message, type, courseId, publishedAt, expiresAt, target, status } = req.body as CreateAnnouncementRequestBody;
+
+    if (!courseId && req.user?.role === UserRolesEnum.FACULTY) {
+        throw new ApiError({ statusCode: 400, message: "courseId is required for faculty" });
+    }
+
+    if (courseId) {
+        const courseExists = await Course.findOne({
+            _id: courseId,
+            deletedAt: null,
+        }).select("_id creator");
+
+        if (!courseExists) {
+            throw new ApiError({ statusCode: 404, message: "Course not exists" });
+        }
+
+        if (req.user?.role === UserRolesEnum.FACULTY) {
+            if (!courseExists.creator.equals(req.user?._id)) {
+                throw new ApiError({ statusCode: 403, message: "Forbidden: not course owner" });
+            }
+
+            if (target !== AnnouncementTargetEnum.COURSE_STUDENTS) {
+                throw new ApiError({ statusCode: 400, message: "Faculty can only target course students" });
+            }
+        }
+    }
+
+    const announcement = await Announcement.create({
+        title,
+        message,
+        type,
+        course: courseId ? courseId : undefined,
+        creator: req.user?._id,
+        publishedAt,
+        expiresAt,
+        target,
+        status,
+    });
+
+    const createdAnnouncement = await Announcement.findById(announcement?._id)
+        .select("-expiresAt")
+        .populate("creator", "username fullName avatar")
+        .populate("course", "title creator");
+
+    if (!createdAnnouncement) {
+        throw new ApiError({ statusCode: 500, message: "Problem while creating announcement" });
+    }
+
+    // await createNotification({
+    //     courseId,
+        
+    // })
+
+    res.status(201)
+        .json(new ApiResponse({
+            statusCode: 201,
+            message: "Announcement created successfully",
+            data: createdAnnouncement,
+        }));
+});
+
+const getAllAnnouncements = asyncHandler(async (req, res) => {
+    const {
+        page: rawPage = "1",
+        limit: rawLimit = "10",
+        order = "asc",
+        sortBy = "createdAt",
+        search,
+        createdBy,
+        courseId,
+    } = req.params as GetRequestPayloads & { courseId?: string };
+
+    let page = Number(rawPage);
+    let limit = Number(rawLimit);
+
+    if (page <= 1 || (limit <= 1 && limit >= 50)) {
+        page = 1;
+        limit = 10;
+    }
+
+    const skip = (page - 1) * limit;
+
+    const sortOrder = order === "desc" ? -1 : 1;
+
+    const filters: QueryFilter<AnnouncementSchemaProps> = { deletedAt: null };
+
+    if (search && typeof search === "string") filters.title = { $regex: search, $options: "i" };
+    if (createdBy && typeof createdBy === "string") filters.creator = createdBy;
+    if (courseId && typeof courseId === "string") filters.course = courseId;
+
+    const announcements = await Announcement.find(filters)
+        .populate("creator", "username fullName avatar")
+        .populate("course", "title creator")
+        .sort({ [sortBy]: sortOrder })
+        .skip(skip)
+        .limit(limit);
+
+    const totalAnnouncements = await Announcement.countDocuments(filters);
+    const totalPages = Math.ceil(totalAnnouncements / limit);
+
+    res.status(200).json(new ApiResponse({
+        statusCode: 200,
+        message: "Announcements fetched successfully",
+        data: { 
+            announcements,
+            metadata: {
+                totalPages,
+                currentPage: page,
+                currentLimit: limit,
+            }
+        },
+        
+    }));
+});
+
+
+export {
+    createAnnouncement,
+    getAllAnnouncements,
+}

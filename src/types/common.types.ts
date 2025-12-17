@@ -1,5 +1,5 @@
 import { Document, Types } from "mongoose";
-import { EnrollmentStatus, MaterialType, UserRole } from "../constants";
+import { AnnouncementStatusType, AnnouncementTargetType, AnnouncementTypesType, EnrollmentStatus, MaterialType, UserRole } from "../constants";
 
 export interface UserSchemaProps extends Document  {
     username: string;
@@ -76,3 +76,17 @@ export type EnrollmentSchemaProps = {
     remarks?: string;
     deletedAt: Date | null;
 }
+
+export type AnnouncementSchemaProps = {
+    title: string;
+    message: string;
+    type: AnnouncementTypesType;
+    course?: Types.ObjectId;
+    creator: Types.ObjectId;
+    publishedAt?: Date;
+    expiresAt?: Date;
+    attachments?: string[];
+    target: AnnouncementTargetType;
+    status: AnnouncementStatusType;
+    deletedAt: Date | null;
+};

@@ -34,7 +34,7 @@ export const upload = multer({
   storage,
   fileFilter: imageFilter,
   limits: {
-    fileSize: 2 * 1024 * 1024,  // 2MB limit
+    fileSize: 4 * 1024 * 1024,  // 4MB limit
     files: 3,
   },
 });

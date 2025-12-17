@@ -1,6 +1,6 @@
 import z from "zod"
 import { UserSchemaProps } from "../types/common.types"
-import { AvailableEnrollmentStatus, AvailableMaterialTypes, AvailableUserRoles, EnrollmentStatusEnum, MaterialTypesEnum, UserRolesEnum } from "../constants"
+import { AnnouncementStatusEnum, AnnouncementTargetEnum, AnnouncementTypesEnum, AvailableAnnouncementStatus, AvailableAnnouncementTargetStatus, AvailableAnnouncementTypes, AvailableEnrollmentStatus, AvailableMaterialTypes, AvailableUserRoles, EnrollmentStatusEnum, MaterialTypesEnum, UserRolesEnum } from "../constants"
 import { Types } from "mongoose";
 
 // ----- Auth Validations -----
@@ -184,6 +184,54 @@ const updateEnrollmentValidator = z.object({
         .optional(),
 });
 
+
+// ----- Announcement Validations -----
+const createAnnouncementValidator = z.object({
+    title: z.string()
+        .nonempty("Title is required")
+        .min(5, "Title must be at least 5 characters long")
+        .max(100, "Title must be at most 100 characters long")
+        .trim(),
+
+    message: z.string()
+        .nonempty("Message is required")
+        .min(10, "Message must be at least 10 characters long")
+        .max(1000, "Message must be at most 1000 characters long")
+        .trim(),
+
+    type: z.enum(AvailableAnnouncementTypes)
+        .default(AnnouncementTypesEnum.INFO)
+        .optional(),
+
+    courseId: z.string()
+        .nonempty("Course id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid course id"
+        })
+        .trim(),
+
+    publishedAt: z
+        .coerce
+        .date()
+        .refine((val) => new Date(val) > new Date(), "PublishedAt must be in the future")
+        .optional(),
+
+    expiresAt: z
+        .coerce
+        .date()
+        .refine((val) => new Date(val) > new Date(), "ExpiresAt must be in the future")
+        .optional(),
+
+    target: z.enum(AvailableAnnouncementTargetStatus)
+        .default(AnnouncementTargetEnum.ALL)
+        .optional(),
+
+    status: z.enum(AvailableAnnouncementStatus)
+        .default(AnnouncementStatusEnum.DRAFT)
+        .optional(),
+    
+})
+
 export {
     registerValidator,
     loginValidator,
@@ -194,4 +242,5 @@ export {
     createMaterialValidator,
     createEnrollmentValidator,
     updateEnrollmentValidator,
+    createAnnouncementValidator,
 }
