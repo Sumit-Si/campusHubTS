@@ -1,12 +1,12 @@
-import { QueryFilter } from "mongoose";
-import { AnnouncementStatusType, AnnouncementTargetEnum, AnnouncementTargetType, AnnouncementTypesType, UserRolesEnum } from "../constants";
+import { QueryFilter, Types } from "mongoose";
+import { AnnouncementStatusEnum, AnnouncementStatusType, AnnouncementTargetEnum, AnnouncementTargetType, AnnouncementTypesType, UserRolesEnum } from "../constants";
 import Announcement from "../models/announcement.model";
 import Course from "../models/course.model";
 import { AnnouncementSchemaProps, GetRequestPayloads } from "../types/common.types";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
-import { createNotification } from "../services/notification.service";
+import { createAnnouncementNotification } from "../services/notification.service";
 
 type CreateAnnouncementRequestBody = {
     title: string;
@@ -16,11 +16,11 @@ type CreateAnnouncementRequestBody = {
     publishedAt?: Date;
     expiresAt?: Date;
     target?: AnnouncementTargetType;
-    status?: AnnouncementStatusType;
+    status?: "draft";
 }
 
 const createAnnouncement = asyncHandler(async (req, res) => {
-    const { title, message, type, courseId, publishedAt, expiresAt, target, status } = req.body as CreateAnnouncementRequestBody;
+    const { title, message, type, courseId, expiresAt, target, status } = req.body as CreateAnnouncementRequestBody;
 
     if (!courseId && req.user?.role === UserRolesEnum.FACULTY) {
         throw new ApiError({ statusCode: 400, message: "courseId is required for faculty" });
@@ -53,7 +53,6 @@ const createAnnouncement = asyncHandler(async (req, res) => {
         type,
         course: courseId ? courseId : undefined,
         creator: req.user?._id,
-        publishedAt,
         expiresAt,
         target,
         status,
@@ -68,11 +67,6 @@ const createAnnouncement = asyncHandler(async (req, res) => {
         throw new ApiError({ statusCode: 500, message: "Problem while creating announcement" });
     }
 
-    // await createNotification({
-    //     courseId,
-        
-    // })
-
     res.status(201)
         .json(new ApiResponse({
             statusCode: 201,
@@ -80,6 +74,57 @@ const createAnnouncement = asyncHandler(async (req, res) => {
             data: createdAnnouncement,
         }));
 });
+
+const publishAnnouncementById = asyncHandler(async (req, res) => {
+    const { status, publishedAt } = req.body as Pick<CreateAnnouncementRequestBody, "status" | "courseId" | "publishedAt">
+    const { id } = req.params as { id: string };
+
+    const announcement = await Announcement.findOne({
+        _id: id,
+        deletedAt: null,
+    }).select("title course status");
+
+    if (!announcement) {
+        throw new ApiError({ statusCode: 404, message: "Announcement not exists" });
+    }
+
+    const announcementObjectId = new Types.ObjectId(id);
+
+    let publishDate: Date | null = null;
+    if (!publishedAt) { publishDate = new Date(); }
+
+    if (publishedAt && new Date(publishedAt) < new Date()) {
+        throw new ApiError({ statusCode: 400, message: "PublishedAt must be in the future" });
+    }
+
+    const publishAnnouncement = await Announcement.findOneAndUpdate(announcementObjectId, {
+        status,
+        publishedAt: publishedAt ? new Date(publishedAt) : publishDate,
+    }, { new: true })
+        .populate("creator", "username fullName avatar")
+        .populate("course", "title creator");
+
+    if (!publishAnnouncement) {
+        throw new ApiError({ statusCode: 500, message: "Problem while publishing announcement" });
+    }
+
+    // Create notifications for students enrolled in the course
+    if (publishAnnouncement.course && publishAnnouncement.status === AnnouncementStatusEnum.PUBLISHED) {
+        await createAnnouncementNotification({
+            courseId: publishAnnouncement.course,
+            announcementId: announcementObjectId,
+            creatorId: req.user!._id,
+        });
+    }
+
+    res.status(200)
+        .json(new ApiResponse({
+            statusCode: 200,
+            message: "Announcement published successfully",
+            data: publishAnnouncement,
+        }));
+
+})
 
 const getAllAnnouncements = asyncHandler(async (req, res) => {
     const {
@@ -90,15 +135,13 @@ const getAllAnnouncements = asyncHandler(async (req, res) => {
         search,
         createdBy,
         courseId,
-    } = req.params as GetRequestPayloads & { courseId?: string };
+    } = req.query as unknown as GetRequestPayloads & { courseId?: string };
 
     let page = Number(rawPage);
     let limit = Number(rawLimit);
 
-    if (page <= 1 || (limit <= 1 && limit >= 50)) {
-        page = 1;
-        limit = 10;
-    }
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1 || limit > 50) limit = 10;
 
     const skip = (page - 1) * limit;
 
@@ -123,20 +166,22 @@ const getAllAnnouncements = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse({
         statusCode: 200,
         message: "Announcements fetched successfully",
-        data: { 
+        data: {
             announcements,
             metadata: {
                 totalPages,
                 currentPage: page,
                 currentLimit: limit,
+                totalAnnouncements,
             }
         },
-        
+
     }));
 });
 
 
 export {
     createAnnouncement,
+    publishAnnouncementById,
     getAllAnnouncements,
 }

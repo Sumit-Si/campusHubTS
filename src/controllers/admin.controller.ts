@@ -7,7 +7,10 @@ import { ApiError } from "../utils/ApiError";
 
 
 const getAllUsers = asyncHandler(async (req, res) => {
-    let { page = 1, limit = 10, sortBy = "createdAt", order = "asc" } = req.query as GetRequestPayloads;
+    const { page: rawPage = "1", limit: rawLimit = "10", sortBy = "createdAt", order = "asc" } = req.query as unknown as GetRequestPayloads;
+
+    let page = Number(rawPage);
+    let limit = Number(rawLimit);
 
     if (page <= 1 || (limit <= 1 && limit >= 50)) {
         page = 1;
@@ -36,6 +39,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
                 totalPages,
                 currentPage: page,
                 currentLimit: limit,
+                totalUsers,
             }
         },
     }));

@@ -232,6 +232,12 @@ const createAnnouncementValidator = z.object({
     
 })
 
+const publishAnnouncementValidator = z.object({
+    status: z.enum(AvailableAnnouncementStatus)
+        .default(AnnouncementStatusEnum.PUBLISHED)
+        .optional(),
+})
+
 export {
     registerValidator,
     loginValidator,
@@ -243,4 +249,5 @@ export {
     createEnrollmentValidator,
     updateEnrollmentValidator,
     createAnnouncementValidator,
+    publishAnnouncementValidator,
 }

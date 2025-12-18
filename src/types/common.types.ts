@@ -1,5 +1,5 @@
 import { Document, Types } from "mongoose";
-import { AnnouncementStatusType, AnnouncementTargetType, AnnouncementTypesType, EnrollmentStatus, MaterialType, UserRole } from "../constants";
+import { AnnouncementStatusType, AnnouncementTargetType, AnnouncementTypesType, EnrollmentStatus, MaterialType, NotificationType, UserRole } from "../constants";
 
 export interface UserSchemaProps extends Document  {
     username: string;
@@ -24,7 +24,6 @@ export type UserDocument = {
 }
 
 export type GetRequestPayloads = {
-    id?: Types.ObjectId;
     page?: number;
     limit?: number;
     search?: string;
@@ -90,3 +89,14 @@ export type AnnouncementSchemaProps = {
     status: AnnouncementStatusType;
     deletedAt: Date | null;
 };
+
+
+export type NotificationSchemaProps = {
+    message: string;
+    creator: Types.ObjectId;
+    type: NotificationType;
+    recipients: Types.ObjectId[];
+    announcementId?: Types.ObjectId;
+    isRead: boolean;
+    deletedAt: Date | null;
+}

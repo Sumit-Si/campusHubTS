@@ -1,5 +1,5 @@
 import Course from "../models/course.model";
-import { QueryFilter } from "mongoose";
+import { QueryFilter, Types } from "mongoose";
 import { CourseSchemaProps, GetRequestPayloads, MaterialFileUpload, MaterialSchemaProps } from "../types/common.types";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
@@ -66,12 +66,13 @@ const createCourse = asyncHandler(async (req, res) => {
 });
 
 const getAllCourses = asyncHandler(async (req, res) => {
-    let { page = 1, limit = 10, search, order = "asc", sortBy = "createdAt", createdBy } = req.params as GetRequestPayloads;
+    const { page: rawPage = "1", limit: rawLimit = "10", search, order = "asc", sortBy = "createdAt", createdBy } = req.query as unknown as GetRequestPayloads;
 
-    if (page <= 1 || (limit <= 1 && limit >= 50)) {
-        page = 1;
-        limit = 10;
-    }
+    let page = Number(rawPage);
+    let limit = Number(rawLimit);
+
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1 || limit > 50) limit = 10;
 
     const skip = (page - 1) * limit;
 
@@ -104,6 +105,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
                     totalPages,
                     currentPage: page,
                     currentLimit: limit,
+                    totalCourses,
                 }
             }
         }))
@@ -202,16 +204,21 @@ const createMaterialByCourseId = asyncHandler(async (req, res) => {
 });
 
 const getMaterialsByCourseId = asyncHandler(async (req, res) => {
-    let { id, page = 1, limit = 10, search, order = "asc", sortBy = "createdAt", createdBy } = req.params as GetRequestPayloads;
+    const { page: rawPage = "1", limit: rawLimit = "10", search, order = "asc", sortBy = "createdAt", createdBy } = req.query as unknown as GetRequestPayloads;
 
-    if (page <= 1 || (limit <= 1 && limit >= 50)) {
-        page = 1;
-        limit = 10;
-    }
+    const { id } = req.params as { id: string };
+
+    let page = Number(rawPage);
+    let limit = Number(rawLimit);
+
+    if (isNaN(page) || page < 1) page = 1;
+    if (isNaN(limit) || limit < 1 || limit > 50) limit = 10;
 
     const skip = (page - 1) * limit;
 
-    const course = await Course.findById(id)
+    const courseObjectId = new Types.ObjectId(id);
+
+    const course = await Course.findById(courseObjectId)
         .select("_id title");
 
     if (!course) {
@@ -249,6 +256,7 @@ const getMaterialsByCourseId = asyncHandler(async (req, res) => {
                     totalPages,
                     currentPage: page,
                     currentLimit: limit,
+                    totalMaterials,
                 }
             }
         }))

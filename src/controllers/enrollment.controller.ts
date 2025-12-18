@@ -116,6 +116,7 @@ const getAllEnrollments = asyncHandler(async (req, res) => {
                     totalPages,
                     currentPage: page,
                     currentLimit: limit,
+                    totalEnrollments,
                 }
             },
         }));
