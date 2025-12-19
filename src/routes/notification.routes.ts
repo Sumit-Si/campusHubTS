@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { checkRole, jwtVerify } from "../middlewares/auth.middleware";
-import { getMyNotifications } from "../controllers/notification.controller";
+import { getAllUnreadNotifications, getMyNotifications, updateBulkNotifications, updateNotificationById } from "../controllers/notification.controller";
 import { AvailableUserRoles } from "../constants";
+import { validate } from "../middlewares/validate.middleware";
+import { updateBulkNotificationsValidator } from "../validators";
 
 const router = Router();
 
@@ -9,5 +11,26 @@ const router = Router();
 router
     .route("/")
     .get(jwtVerify, checkRole(AvailableUserRoles), getMyNotifications);
+
+
+// Get all unread notifications
+router
+    .route("/unread")
+    .get(jwtVerify, checkRole(AvailableUserRoles), getAllUnreadNotifications);
+
+
+// Update read status by id -- Single
+router
+    .route("/:id/read")
+    .patch(jwtVerify, checkRole(AvailableUserRoles), updateNotificationById);
+
+
+// Update read status by id -- Bulk
+router
+    .route("/mark-read")
+    .patch(jwtVerify,
+        checkRole(AvailableUserRoles),
+        validate(updateBulkNotificationsValidator),
+        updateBulkNotifications);
 
 export default router;

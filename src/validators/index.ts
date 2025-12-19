@@ -229,14 +229,28 @@ const createAnnouncementValidator = z.object({
     status: z.enum(AvailableAnnouncementStatus)
         .default(AnnouncementStatusEnum.DRAFT)
         .optional(),
-    
-})
+
+});
 
 const publishAnnouncementValidator = z.object({
     status: z.enum(AvailableAnnouncementStatus)
         .default(AnnouncementStatusEnum.PUBLISHED)
         .optional(),
-})
+});
+
+
+// ----- Notification Validations -----
+const updateBulkNotificationsValidator = z.object({
+    notificationIds: z.array(z.string()
+        .trim()
+        .nonempty("Notification id is required")
+        .refine(
+            (ids) => new Set(ids).size === ids.length, "Duplicate notification ids are not allowed").refine(Types.ObjectId.isValid, {
+                message: "Invalid notification id"
+            }))
+        .min(1, "At least one notificationId is required")
+        .max(100, "At most 100 notificationIds are allowed"),
+});
 
 export {
     registerValidator,
@@ -250,4 +264,5 @@ export {
     updateEnrollmentValidator,
     createAnnouncementValidator,
     publishAnnouncementValidator,
+    updateBulkNotificationsValidator,
 }
