@@ -2,6 +2,7 @@ import z from "zod"
 import { UserSchemaProps } from "../types/common.types"
 import { AnnouncementStatusEnum, AnnouncementTargetEnum, AnnouncementTypesEnum, AvailableAnnouncementStatus, AvailableAnnouncementTargetStatus, AvailableAnnouncementTypes, AvailableEnrollmentStatus, AvailableMaterialTypes, AvailableUserRoles, EnrollmentStatusEnum, MaterialTypesEnum, UserRolesEnum } from "../constants"
 import { Types } from "mongoose";
+import { AssessmentTypeEnum, AvailableAssessmentTypes } from "../models/assessment.model";
 
 // ----- Auth Validations -----
 const registerValidator = z.object({
@@ -73,8 +74,11 @@ const updateUserRoleByIdValidator = z.object({
 
 const userIdParamValidator = z.object({
     id: z.string()
-        // Mongo ObjectId pattern
-        .regex(/^[0-9a-fA-F]{24}$/, "Invalid user id")
+        .nonempty("Assessment id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid assessment id"
+        })
+        .trim(),
 });
 
 
@@ -223,7 +227,7 @@ const createAnnouncementValidator = z.object({
         .optional(),
 
     target: z.enum(AvailableAnnouncementTargetStatus)
-        .default(AnnouncementTargetEnum.ALL)
+        .default(AnnouncementTargetEnum.COURSE_STUDENTS)
         .optional(),
 
     status: z.enum(AvailableAnnouncementStatus)
@@ -252,6 +256,188 @@ const updateBulkNotificationsValidator = z.object({
         .max(100, "At most 100 notificationIds are allowed"),
 });
 
+
+// ----- Assessment Validations -----
+const createAssessmentValidator = z.object({
+    title: z.string()
+        .nonempty("Title is required")
+        .min(5, "Title must be at least 5 characters long")
+        .max(100, "Title must be at most 100 characters long")
+        .trim(),
+
+    description: z.string()
+        .min(20, "Description must be at least 20 characters long")
+        .max(1000, "Description must be at most 1000 characters long")
+        .trim()
+        .optional(),
+
+    dueDate: z.coerce
+        .date()
+        .refine((val) => new Date(val) > new Date(), "DueDate must be in the future")
+        .optional(),
+
+    courseId: z.string()
+        .nonempty("Course id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid course id"
+        })
+        .trim(),
+
+    maxMarks: z.coerce
+        .number()
+        .int()
+        .positive()
+        .min(1, "Max marks must be at least 1")
+        .max(100, "Max marks must be at most 100"),
+
+    type: z.enum(AvailableAssessmentTypes)
+        .default(AssessmentTypeEnum.QUIZ)
+        .optional(),
+});
+
+
+// ----- Assessment Validations -----
+const updateAssessmentValidator = z.object({
+    title: z.string()
+        .min(5, "Title must be at least 5 characters long")
+        .max(100, "Title must be at most 100 characters long")
+        .trim()
+        .optional(),
+
+    description: z.string()
+        .min(20, "Description must be at least 20 characters long")
+        .max(1000, "Description must be at most 1000 characters long")
+        .trim()
+        .optional(),
+
+    dueDate: z.coerce
+        .date()
+        .refine((val) => new Date(val) > new Date(), "DueDate must be in the future")
+        .optional(),
+
+    maxMarks: z.coerce
+        .number()
+        .int()
+        .positive()
+        .min(1, "Max marks must be at least 1")
+        .max(100, "Max marks must be at most 100")
+        .optional(),
+
+    type: z.enum(AvailableAssessmentTypes)
+        .optional(),
+
+    // assessmentFiles: z.array(z.string())
+    //     .optional(),
+});
+
+const assessmentIdParamValidator = z.object({
+    id: z.string()
+        .nonempty("Assessment id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid assessment id"
+        })
+        .trim(),
+});
+
+
+// ----- Submission Validations -----
+const createSubmissionValidator = z.object({
+    assessmentId: z.string()
+        .nonempty("Assessment id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid assessment id"
+        })
+        .trim(),
+
+    submissionFiles: z.array(z.string())
+        .min(1, "At least one file is required")
+        .optional(),
+});
+
+const submissionIdParamValidator = z.object({
+    id: z.string()
+        .nonempty("Submission id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid submission id"
+        })
+        .trim(),
+});
+
+
+// ----- Result Validations -----
+const createBulkResultsValidator = z.object({
+    assessmentId: z.string()
+        .nonempty("Assessment id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid assessment id"
+        })
+        .trim(),
+
+    academicYear: z.coerce
+        .number()
+        .int()
+        .positive()
+        .min(2000, "Academic year must be at least 2000")
+        .max(2100, "Academic year must be at most 2100"),
+
+    results: z.array(z.object({
+        submissionId: z.string()
+            .nonempty("Submission id is required")
+            .refine(Types.ObjectId.isValid, {
+                message: "Invalid submission id"
+            })
+            .trim(),
+
+        marks: z.coerce
+            .number()
+            .min(0, "Marks must be at least 0")
+            .max(100, "Marks must be at most 100"),
+
+        feedback: z.string()
+            .max(1000, "Feedback must be at most 1000 characters long")
+            .trim()
+            .optional(),
+
+        remarks: z.string()
+            .max(500, "Remarks must be at most 500 characters long")
+            .trim()
+            .optional(),
+    }))
+        .min(1, "At least one result is required")
+        .max(100, "At most 100 results are allowed"),
+});
+
+const createSingleResultValidator = z.object({
+    submissionId: z.string()
+        .nonempty("Submission id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid submission id"
+        })
+        .trim(),
+
+    marks: z.coerce
+        .number()
+        .min(0, "Marks must be at least 0")
+        .max(100, "Marks must be at most 100"),
+
+    feedback: z.string()
+        .max(1000, "Feedback must be at most 1000 characters long")
+        .trim()
+        .optional(),
+
+    remarks: z.string()
+        .max(500, "Remarks must be at most 500 characters long")
+        .trim()
+        .optional(),
+
+    academicYear: z.coerce
+        .number()
+        .int()
+        .positive()
+        .min(2000, "Academic year must be at least 2000")
+        .max(2100, "Academic year must be at most 2100"),
+});
+
 export {
     registerValidator,
     loginValidator,
@@ -265,4 +451,11 @@ export {
     createAnnouncementValidator,
     publishAnnouncementValidator,
     updateBulkNotificationsValidator,
+    createAssessmentValidator,
+    updateAssessmentValidator,
+    assessmentIdParamValidator,
+    createSubmissionValidator,
+    submissionIdParamValidator,
+    createBulkResultsValidator,
+    createSingleResultValidator,
 }

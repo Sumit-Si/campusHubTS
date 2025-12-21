@@ -40,7 +40,7 @@ export const AvailableEnrollmentStatus = Object.values(EnrollmentStatusEnum) as 
 // Announcement constants
 export type AnnouncementStatusType = "draft" | "published";
 export type AnnouncementTargetType = "course_students" | "department_students" |
-  "all_users" | "admins_only";
+    "all_users" | "admins_only";
 export type AnnouncementTypesType = "info" | "warning" | "event";
 
 export const AnnouncementStatusEnum = {
@@ -76,5 +76,32 @@ export const NotificationTypeEnum = {
 } as const;
 
 export const AvailableNotificationTypes = Object.values(NotificationTypeEnum) as readonly string[];
+
+// Submission constants
+export type SubmissionStatus = "draft" | "submitted" | "graded" | "late";
+
+export const SubmissionStatusEnum = {
+    DRAFT: "draft",
+    SUBMITTED: "submitted",
+    GRADED: "graded",
+    LATE: "late",
+} as const;
+
+export const AvailableSubmissionStatus = Object.values(SubmissionStatusEnum) as readonly SubmissionStatus[];
+
+// Result constants
+export type ResultGrade = "O" | "A" | "B" | "C" | "D" | "E" | "F";
+
+export const ResultGradeEnum = {
+    O: "O",
+    A: "A",
+    B: "B",
+    C: "C",
+    D: "D",
+    E: "E",
+    F: "F",
+} as const;
+
+export const AvailableResultGrades = Object.values(ResultGradeEnum) as readonly ResultGrade[];
 
 export const DB_NAME = "campusHubTS" as const;

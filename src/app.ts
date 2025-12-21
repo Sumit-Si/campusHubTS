@@ -25,6 +25,9 @@ import adminRouter from "./routes/admin.routes";
 import courseRouter from "./routes/course.routes";
 import enrollmentRouter from "./routes/enrollment.routes";
 import announcementRouter from "./routes/announcement.routes";
+import resultRouter from "./routes/result.routes"
+import assessmentRouter from "./routes/assessment.routes";
+import submissionRouter from "./routes/submission.routes";
 import globalErrorHandler from "./utils/globalErrorHandler";
 
 app.use("/api/v1/healthCheck", healthCheckRouter);
@@ -33,6 +36,9 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/courses", courseRouter);
 app.use("/api/v1/enrollments", enrollmentRouter);
 app.use("/api/v1/announcements", announcementRouter);
+app.use("/api/v1/results", resultRouter);
+app.use("/api/v1/assessments", assessmentRouter);
+app.use("/api/v1/submissions", submissionRouter);
 
 // Global Error Handling
 app.use(globalErrorHandler);

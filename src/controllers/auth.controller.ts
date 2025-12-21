@@ -33,7 +33,7 @@ const register = asyncHandler(async (req, res) => {
             image = await uploadOnCloudinary(imageLocalPath);
             console.log("Uploaded image", image);
             if (!image?.url) {
-                throw new ApiError({statusCode: 400,message: "Upload succeeded without url"});
+                throw new ApiError({ statusCode: 400, message: "Upload succeeded without url" });
             }
         } catch (error) {
             console.log("Error uploading image", error);
@@ -186,7 +186,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     try {
         const decoded = jwt.verify(token, config.REFRESH_TOKEN_SECRET) as DecodedJWTPayload;
 
-        if(decoded._id !== currentUserId) {
+        if (decoded._id !== currentUserId) {
             throw new ApiError({ statusCode: 401, message: "Invalid token" });
         }
 
