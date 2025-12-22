@@ -1,5 +1,5 @@
 import { Document, Types } from "mongoose";
-import { AnnouncementStatusType, AnnouncementTargetType, AnnouncementTypesType, EnrollmentStatus, MaterialType, NotificationType, UserRole } from "../constants";
+import { AnnouncementStatusType, AnnouncementTargetType, AnnouncementTypesType, EnrollmentStatus, MaterialType, NotificationType, ResultGrade, SubmissionStatus, UserRole } from "../constants";
 
 export interface UserSchemaProps extends Document  {
     username: string;
@@ -66,6 +66,7 @@ export type MaterialSchemaProps = {
     deletedAt: Date | null;
 }
 
+// Enrollment Schema Types
 export type EnrollmentSchemaProps = {
     user: Types.ObjectId;
     course: Types.ObjectId;
@@ -76,6 +77,7 @@ export type EnrollmentSchemaProps = {
     deletedAt: Date | null;
 }
 
+// Announcement Schema Types
 export type AnnouncementSchemaProps = {
     title: string;
     message: string;
@@ -90,7 +92,7 @@ export type AnnouncementSchemaProps = {
     deletedAt: Date | null;
 };
 
-
+// Notification Schema Types
 export type NotificationSchemaProps = {
     message: string;
     creator: Types.ObjectId;
@@ -99,4 +101,32 @@ export type NotificationSchemaProps = {
     announcementId?: Types.ObjectId;
     isRead: boolean;
     deletedAt: Date | null;
+}
+
+// Submission Schema Types
+export type SubmissionSchemaProps = {
+    user: Types.ObjectId,
+    assessment: Types.ObjectId,
+    submissionDate: Date | null,
+    submissionFiles?: string[],
+    marks?: number,  // Optional - only set after grading
+    feedback?: string,
+    status: SubmissionStatus,
+    result?: Types.ObjectId,  // Reference to Result after grading
+    deletedAt: Date | null,
+}
+
+// Result Schema Types
+export type ResultSchemaProps = {
+    enrollment: Types.ObjectId,
+    assessment: Types.ObjectId,  // Reference to Assessment
+    submission: Types.ObjectId,  // Reference to Submission
+    course: Types.ObjectId,
+    user: Types.ObjectId,
+    creator: Types.ObjectId,
+    marks: number,
+    grade: ResultGrade,
+    academicYear: number,
+    remarks?: string,
+    deletedAt?: Date | null,
 }
