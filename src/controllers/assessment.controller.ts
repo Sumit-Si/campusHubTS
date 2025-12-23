@@ -241,7 +241,6 @@ const getAssessmentById = asyncHandler(async (req, res) => {
 });
 // TODO: handle file upload for update
 const updateAssessmentById = asyncHandler(async (req, res) => {
-    console.log("update fnc");
 
     const { id } = req.params as { id: string };
     const { title, description, dueDate, maxMarks, type } = req.body as Pick<CreateAssessmentRequestBody, "title" | "description" | "dueDate" | "maxMarks" | "type"> || {};
@@ -313,7 +312,7 @@ const deleteAssessmentById = asyncHandler(async (req, res) => {
     if (!assessment) {
         throw new ApiError({
             statusCode: 404,
-            message: "Assessment not found",
+            message: "Assessment not exists",
         });
     }
 

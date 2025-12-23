@@ -22,3 +22,4 @@ export const calculateGrade = (marks: number): ResultGrade => {
 };
 
 
+
