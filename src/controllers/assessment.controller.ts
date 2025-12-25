@@ -20,9 +20,10 @@ const createAssessment = asyncHandler(async (req, res) => {
     const { title, description, dueDate, courseId, maxMarks, type } = req.body as CreateAssessmentRequestBody;
 
     const userId = req.user?._id;
+    const courseIdObjectId = new Types.ObjectId(courseId);
 
     const course = await Course.findOne({
-        _id: courseId,
+        _id: courseIdObjectId,
         deletedAt: null,
     }).select("_id title creator");
 
@@ -42,7 +43,7 @@ const createAssessment = asyncHandler(async (req, res) => {
 
     const existingAssessment = await Assessment.findOne({
         title,
-        course: courseId,
+        course: courseIdObjectId,
         dueDate,
         deletedAt: null,
     }).select("_id title dueDate");
@@ -114,7 +115,7 @@ const createAssessment = asyncHandler(async (req, res) => {
             title,
             description,
             dueDate,
-            course: courseId,
+            course: courseIdObjectId,
             creator: userId,
             maxMarks,
             type: type || "quiz",

@@ -3,8 +3,8 @@ import { checkRole, jwtVerify } from "../middlewares/auth.middleware";
 import { createAnnouncement, getAllAnnouncements, publishAnnouncementById } from "../controllers/announcement.controller";
 import { AvailableUserRoles, UserRolesEnum } from "../constants";
 import { upload } from "../middlewares/multer.middleware";
-import { validate } from "../middlewares/validate.middleware";
-import { createAnnouncementValidator, publishAnnouncementValidator } from "../validators";
+import { validate, validateParams } from "../middlewares/validate.middleware";
+import { announcementIdParamValidator, createAnnouncementValidator, publishAnnouncementValidator } from "../validators";
 import { requireCourseOwnership } from "../middlewares/ownership.middleware";
 
 
@@ -19,15 +19,16 @@ router
         validate(createAnnouncementValidator),
         createAnnouncement,
     )
-    .patch(jwtVerify, 
+    .patch(jwtVerify,
         checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]),
         // requireCourseOwnership,
+        validateParams(announcementIdParamValidator),
         validate(publishAnnouncementValidator),
         publishAnnouncementById,
     )
     .get(jwtVerify,
         checkRole(AvailableUserRoles),
         getAllAnnouncements,
-    )
+    );
 
 export default router;

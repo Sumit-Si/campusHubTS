@@ -2,8 +2,8 @@ import { Router } from "express";
 import { checkRole, jwtVerify } from "../middlewares/auth.middleware";
 import { getAllUnreadNotifications, getMyNotifications, updateBulkNotifications, updateNotificationById } from "../controllers/notification.controller";
 import { AvailableUserRoles } from "../constants";
-import { validate } from "../middlewares/validate.middleware";
-import { updateBulkNotificationsValidator } from "../validators";
+import { validate, validateParams } from "../middlewares/validate.middleware";
+import { notificationIdParamValidator, updateBulkNotificationsValidator } from "../validators";
 
 const router = Router();
 
@@ -22,7 +22,10 @@ router
 // Update read status by id -- Single
 router
     .route("/:id/read")
-    .patch(jwtVerify, checkRole(AvailableUserRoles), updateNotificationById);
+    .patch(jwtVerify, 
+        checkRole(AvailableUserRoles), 
+        validateParams(notificationIdParamValidator),
+        updateNotificationById);
 
 
 // Update read status by id -- Bulk

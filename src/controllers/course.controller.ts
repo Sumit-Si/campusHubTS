@@ -78,7 +78,7 @@ const getAllCourses = asyncHandler(async (req, res) => {
 
     const sortOrder = order === "desc" ? -1 : 1;
 
-    const filters: QueryFilter<CourseSchemaProps> = {};
+    const filters: QueryFilter<CourseSchemaProps> = { deletedAt: null };
 
     if (search && typeof search === "string") filters.title = { $regex: search, $options: "i" };
     if (createdBy && typeof createdBy === "string") filters.creator = createdBy;
@@ -116,7 +116,9 @@ const createMaterialByCourseId = asyncHandler(async (req, res) => {
 
     const { id } = req.params as { id: string };
 
-    const course = await Course.findById(id)
+    const courseObjectId = new Types.ObjectId(id);
+
+    const course = await Course.findById(courseObjectId)
         .select("_id title creator");
 
     if (!course) {

@@ -5,7 +5,7 @@ import { ApiError } from "../utils/ApiError";
 import { EnrollmentSchemaProps, GetRequestPayloads } from "../types/common.types";
 import { EnrollmentStatus, UserRole, UserRolesEnum } from "../constants";
 import Course from "../models/course.model";
-import { QueryFilter } from "mongoose";
+import { QueryFilter, Types } from "mongoose";
 
 type CreateEnrollmentRequestBody = {
     courseId: string;
@@ -125,8 +125,10 @@ const getAllEnrollments = asyncHandler(async (req, res) => {
 const getEnrollmentById = asyncHandler(async (req, res) => {
     const { id } = req.params as { id: string };
 
+    const enrollmentObjectId = new Types.ObjectId(id);
+
     const enrollment = await Enrollment.findOne({
-        _id: id,
+        _id: enrollmentObjectId,
         deletedAt: null,
     })
         .populate("user", "username fullName avatar")
@@ -145,8 +147,10 @@ const updateEnrollmentById = asyncHandler(async (req, res) => {
 
     const { id } = req.params as { id: string };
 
+    const enrollmentObjectId = new Types.ObjectId(id);
+
     const enrollment = await Enrollment.findOne({
-        _id: id,
+        _id: enrollmentObjectId,
         deletedAt: null,
     }).select("_id status role");
 
@@ -157,7 +161,7 @@ const updateEnrollmentById = asyncHandler(async (req, res) => {
         });
     }
 
-    const updatedEnrollment = await Enrollment.findByIdAndUpdate(id, {
+    const updatedEnrollment = await Enrollment.findByIdAndUpdate(enrollmentObjectId, {
         status,
         remarks,
     }, { new: true })
@@ -182,8 +186,10 @@ const updateEnrollmentById = asyncHandler(async (req, res) => {
 const deleteEnrollmentById = asyncHandler(async (req, res) => {
     const { id } = req.params as { id: string };
 
+    const enrollmentObjectId = new Types.ObjectId(id);
+
     const enrollment = await Enrollment.findOne({
-        _id: id,
+        _id: enrollmentObjectId,
         deletedAt: null,
     }).select("_id status role");
 
@@ -194,7 +200,7 @@ const deleteEnrollmentById = asyncHandler(async (req, res) => {
         });
     }
 
-    const deletedEnrollment = await Enrollment.findByIdAndUpdate(id, {
+    const deletedEnrollment = await Enrollment.findByIdAndUpdate(enrollmentObjectId, {
         deletedAt: new Date(),
     })
         .populate("user", "username fullName avatar")

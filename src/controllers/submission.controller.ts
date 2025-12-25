@@ -49,7 +49,7 @@ const createOrUpdateSubmission = asyncHandler(async (req, res) => {
 
     const submissionFiles = req.files as Express.Multer.File[] | undefined;
     console.log("Submission Files: ", submissionFiles);
-    
+
     let uploadedFiles: Array<{ url: string, public_id: string }> = [];
 
     if (submissionFiles && submissionFiles.length > 0) {
@@ -159,7 +159,7 @@ const createOrUpdateSubmission = asyncHandler(async (req, res) => {
 
 // Submit the submission (change status from draft to submitted)
 const submitSubmission = asyncHandler(async (req, res) => {
-    const { id } = req.params;
+    const { id } = req.params as {id: string};
     const userId = req.user?._id;
 
     const submissionObjectId = new Types.ObjectId(id);
@@ -218,9 +218,8 @@ const submitSubmission = asyncHandler(async (req, res) => {
     );
 });
 
-// Get submission by Id
 const getSubmissionById = asyncHandler(async (req, res) => {
-    const { id } = req.params as {id: string};
+    const { id } = req.params as { id: string };
     const userId = req.user?._id;
     const userRole = req.user?.role;
 
@@ -275,8 +274,8 @@ const getSubmissionById = asyncHandler(async (req, res) => {
 
 // Get all submissions for an assessment (Faculty only)
 const getSubmissionsByAssessment = asyncHandler(async (req, res) => {
-    const { id } = req.params as {id: string};
-    const {page: rawPage = "1", limit: rawLimit = "10", sortBy = "createdAt", order = "asc", createdBy} = req.query as unknown as GetRequestPayloads;
+    const { id } = req.params as { id: string };
+    const { page: rawPage = "1", limit: rawLimit = "10", sortBy = "createdAt", order = "asc", createdBy } = req.query as unknown as GetRequestPayloads;
 
     let page = Number(rawPage);
     let limit = Number(rawLimit);
@@ -339,7 +338,6 @@ const getSubmissionsByAssessment = asyncHandler(async (req, res) => {
     );
 });
 
-// Get all submissions by user
 const getSubmissionsByUser = asyncHandler(async (req, res) => {
     const { id, page: rawPage = "1", limit: rawLimit = "10", order = "asc", sortBy = "createdAt", search } = req.query as unknown as GetRequestPayloads & { id?: string };
     const userId = req.user?._id;
@@ -401,6 +399,7 @@ export {
     getSubmissionsByAssessment,
     getSubmissionsByUser,
 };
+
 
 
 

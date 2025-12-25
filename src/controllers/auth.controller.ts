@@ -1,5 +1,5 @@
 import { asyncHandler } from "../utils/asyncHandler";
-import type { CookieOptions, UserLoginAction, UserRequestAction } from "../types/auth.types";
+import type { CookieOptions, UserLoginAction, CreateUserRequestBody } from "../types/auth.types";
 import User from "../models/user.model";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
@@ -14,7 +14,7 @@ import { uploadOnCloudinary } from "../config/cloudinary";
 
 const register = asyncHandler(async (req, res) => {
 
-    const { username, email, password, role, fullName } = req.body as UserRequestAction;
+    const { username, email, password, role, fullName } = req.body as CreateUserRequestBody;
 
     const existingUser = await User.findOne({
         email,
@@ -25,13 +25,11 @@ const register = asyncHandler(async (req, res) => {
     }
 
     const imageLocalPath = req.file?.path;
-    console.log("imageLocalPath: ", imageLocalPath);
     let image;
 
     if (imageLocalPath) {
         try {
             image = await uploadOnCloudinary(imageLocalPath);
-            console.log("Uploaded image", image);
             if (!image?.url) {
                 throw new ApiError({ statusCode: 400, message: "Upload succeeded without url" });
             }
@@ -49,10 +47,6 @@ const register = asyncHandler(async (req, res) => {
         role,
         avatar: image ? image.url : "",
     });
-
-    if (!user) {
-        throw new ApiError({ statusCode: 500, message: "Problem while creating user" });
-    }
 
     const createdUser = await User.findById(user._id)
         .select("-refreshToken");
@@ -84,7 +78,6 @@ const login = asyncHandler(async (req, res) => {
 
     const isMatch = await user.isPasswordCorrect(password);
     logger.warn("isMatch: ", isMatch);
-    console.log("isMatch: ", isMatch);
     if (!isMatch) {
         throw new ApiError({ statusCode: 400, message: "Invalid credientails" });
     }
@@ -196,7 +189,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
         if (!user) {
             throw new ApiError({ statusCode: 401, message: "Invalid token" });
         }
-        console.log("token: ", token, "refreshToken: ", user.refreshToken);
+        // console.log("token: ", token, "refreshToken: ", user.refreshToken);
 
         if (token !== user.refreshToken) {
             throw new ApiError({ statusCode: 401, message: "Invalid token" });
@@ -229,7 +222,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
 
-})
+});
 
 const currentUser = asyncHandler(async (req, res) => {
 
@@ -238,7 +231,7 @@ const currentUser = asyncHandler(async (req, res) => {
         message: "Current user fetched successfully",
         data: req.user,
     }))
-})
+});
 
 
 export {

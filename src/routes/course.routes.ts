@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { checkRole, jwtVerify } from "../middlewares/auth.middleware";
 import { UserRolesEnum } from "../constants";
-import { validate } from "../middlewares/validate.middleware";
+import { validate, validateParams } from "../middlewares/validate.middleware";
 import { createCourse, createMaterialByCourseId, getAllCourses, getMaterialsByCourseId } from "../controllers/course.controller";
-import { createCourseValidator, createMaterialValidator } from "../validators";
+import { courseIdParamValidator, createCourseValidator, createMaterialValidator } from "../validators";
 import { upload } from "../middlewares/multer.middleware";
 
 const router = Router();
@@ -24,8 +24,12 @@ router
     .post(jwtVerify,
         checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]),
         upload.array("files", 3),
+        validateParams(courseIdParamValidator),
         validate(createMaterialValidator),
         createMaterialByCourseId)
-    .get(jwtVerify,checkRole([UserRolesEnum.STUDENT, UserRolesEnum.FACULTY]), getMaterialsByCourseId);
+    .get(jwtVerify,
+        checkRole([UserRolesEnum.STUDENT, UserRolesEnum.FACULTY]), 
+        validateParams(courseIdParamValidator),
+        getMaterialsByCourseId);
 
 export default router;

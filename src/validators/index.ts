@@ -74,9 +74,9 @@ const updateUserRoleByIdValidator = z.object({
 
 const userIdParamValidator = z.object({
     id: z.string()
-        .nonempty("Assessment id is required")
+        .nonempty("User id is required")
         .refine(Types.ObjectId.isValid, {
-            message: "Invalid assessment id"
+            message: "Invalid user id"
         })
         .trim(),
 });
@@ -104,6 +104,15 @@ const createCourseValidator = z.object({
 
 
 // ----- Course Material Validations -----
+const courseIdParamValidator = z.object({
+    id: z.string()
+        .nonempty("Course id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid course id",
+        })
+        .trim(),
+});
+
 const createMaterialValidator = z.object({
     name: z.string()
         .nonempty("Name is required")
@@ -176,6 +185,14 @@ const createEnrollmentValidator = z.object({
 
 });
 
+const enrollmentIdParamValidator = z.object({
+    id: z.string()
+        .nonempty("Enrollment id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid enrollment id",
+        }).trim(),
+})
+
 const updateEnrollmentValidator = z.object({
     remarks: z.string()
         .min(20, "Remarks must be at least 20 characters long")
@@ -236,6 +253,15 @@ const createAnnouncementValidator = z.object({
 
 });
 
+const announcementIdParamValidator = z.object({
+    id: z.string()
+        .nonempty("Announcement id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid announcement id"
+        })
+        .trim(),
+});
+
 const publishAnnouncementValidator = z.object({
     status: z.enum(AvailableAnnouncementStatus)
         .default(AnnouncementStatusEnum.PUBLISHED)
@@ -244,6 +270,15 @@ const publishAnnouncementValidator = z.object({
 
 
 // ----- Notification Validations -----
+const notificationIdParamValidator = z.object({
+    id: z.string()
+        .nonempty("Notification id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid notification id"
+        })
+        .trim(),
+});
+
 const updateBulkNotificationsValidator = z.object({
     notificationIds: z.array(z.string()
         .trim()
@@ -445,11 +480,15 @@ export {
     updateUserRoleByIdValidator,
     userIdParamValidator,
     createCourseValidator,
+    courseIdParamValidator,
     createMaterialValidator,
     createEnrollmentValidator,
+    enrollmentIdParamValidator,
     updateEnrollmentValidator,
     createAnnouncementValidator,
+    announcementIdParamValidator,
     publishAnnouncementValidator,
+    notificationIdParamValidator,
     updateBulkNotificationsValidator,
     createAssessmentValidator,
     updateAssessmentValidator,

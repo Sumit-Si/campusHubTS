@@ -39,6 +39,10 @@ const enrollmentSchema = new Schema<EnrollmentSchemaProps>({
     timestamps: true,
 });
 
+enrollmentSchema.index({ user: 1, course: 1 }, { unique: true });
+enrollmentSchema.index({ course: 1, status: 1 });
+enrollmentSchema.index({ course: 1, deletedAt: 1 });
+
 // Pivot table for User and Course relationship
 const Enrollment = mongoose.model<EnrollmentSchemaProps>("Enrollment", enrollmentSchema);
 

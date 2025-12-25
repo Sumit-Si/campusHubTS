@@ -47,7 +47,7 @@ const getAllUsers = asyncHandler(async (req, res) => {
 
 const updateUserRoleById = asyncHandler(async (req, res) => {
     const { role } = req.body as { role: UserRole };
-    const { id } = req.params;
+    const { id } = req.params as {id: string};
 
     const existingUser = await User.findById(id)
         .select("-password -refreshToken");
@@ -69,6 +69,13 @@ const updateUserRoleById = asyncHandler(async (req, res) => {
             message: "Problem while updating user's role",
         })
     }
+
+    res.status(200)
+        .json(new ApiResponse({
+            statusCode: 200,
+            message: "User's role updated successfully",
+            data: updateUser,
+        }))
 });
 
 

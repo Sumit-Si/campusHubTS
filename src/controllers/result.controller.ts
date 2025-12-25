@@ -272,8 +272,8 @@ const createSingleResult = asyncHandler(async (req, res) => {
 });
 
 const getResultsByAssessment = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const {page: rawPage = "1", limit: rawLimit = "10", order = "asc", sortBy = "createdAt", search} = req.query as unknown as GetRequestPayloads;
+    const { id } = req.params as { id: string };
+    const { page: rawPage = "1", limit: rawLimit = "10", order = "asc", sortBy = "createdAt", search } = req.query as unknown as GetRequestPayloads;
     const userId = req.user?._id;
 
     const assessmentObjectId = new Types.ObjectId(id);
@@ -344,7 +344,7 @@ const getResultsByAssessment = asyncHandler(async (req, res) => {
 });
 
 const getResultsByUser = asyncHandler(async (req, res) => {
-    const {id, page: rawPage = "1", limit: rawLimit = "10", order = "asc", sortBy = "createdAt", search} = req.query as unknown as GetRequestPayloads & {id?: string};
+    const { id, page: rawPage = "1", limit: rawLimit = "10", order = "asc", sortBy = "createdAt", search } = req.query as unknown as GetRequestPayloads & { id?: string };
     const userId = req.user?._id;
 
     let page = Number(rawPage);
