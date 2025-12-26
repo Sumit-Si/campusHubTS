@@ -19,6 +19,13 @@ router
         validate(createAnnouncementValidator),
         createAnnouncement,
     )
+    .get(jwtVerify,
+        checkRole(AvailableUserRoles),
+        getAllAnnouncements,
+    );
+
+router
+    .route("/:id")
     .patch(jwtVerify,
         checkRole([UserRolesEnum.ADMIN, UserRolesEnum.FACULTY]),
         // requireCourseOwnership,
@@ -26,9 +33,5 @@ router
         validate(publishAnnouncementValidator),
         publishAnnouncementById,
     )
-    .get(jwtVerify,
-        checkRole(AvailableUserRoles),
-        getAllAnnouncements,
-    );
 
 export default router;
