@@ -3,41 +3,46 @@ import Notification from "../models/notification.model";
 import Enrollment from "../models/enrollment.model";
 import { NotificationTypeEnum } from "../constants";
 
-type AnnouncementNotificationProps = {
+export type AnnouncementNotification = {
     courseId: Types.ObjectId;
     announcementId: Types.ObjectId;
     creatorId: Types.ObjectId;
-};
+    message: string;
+    expiresAt?: Date | null;
+}
 
-/**
- * Create notifications for all students enrolled in a course when an announcement is posted.
- *
- * This is a pure service function (no Express req/res), so it can be safely
- * called from controllers, jobs, queues, etc.
- */
-const createAnnouncementNotification = async ({
-    courseId,
-    announcementId,
-    creatorId,
-}: AnnouncementNotificationProps): Promise<void> => {
-    const courseObjectId = new Types.ObjectId(courseId);
+const createAnnouncementNotification = async ({ courseId, announcementId, creatorId, message, expiresAt }: AnnouncementNotification) => {
 
-    const enrollments = await Enrollment.find({
-        course: courseObjectId,
+    let recipients: Types.ObjectId[] = [];
+
+    const enrolledUsers = await Enrollment.find({
+        course: courseId,
         deletedAt: null,
     }).select("user");
 
-    if (enrollments.length === 0) return;
+    console.log("enrolled users: ", enrolledUsers);
 
-    const notifications = enrollments.map((enrollment) => ({
-        message: "New announcement posted",
+    enrolledUsers.map(u => recipients.push(u.user));
+
+    if (recipients.length === 0) return;
+
+    const notificationData = recipients.map(recipient => ({
+        message,
         creator: creatorId,
-        announcementId,
-        recipients: [enrollment.user],
         type: NotificationTypeEnum.ANNOUNCEMENT,
+        recipients: [recipient],
+        isRead: false,
+        expiresAt: expiresAt || null,
     }));
 
-    await Notification.insertMany(notifications);
+    const BATCH_SIZE = 100;
+    for (let i = 0; i < notificationData.length; i += BATCH_SIZE) {
+        const batch = notificationData.slice(i, i + BATCH_SIZE);
+        console.log("batch: ", batch);
+        
+        await Notification.insertMany(batch, { ordered: false });
+    }
 };
-
-export { createAnnouncementNotification };
+export {
+    createAnnouncementNotification,
+}

@@ -1,5 +1,5 @@
 import { Document, Types } from "mongoose";
-import { AnnouncementStatusType, AnnouncementTargetType, AnnouncementTypesType, EnrollmentStatus, MaterialType, NotificationType, ResultGrade, SubmissionStatus, UserRole } from "../constants";
+import { AnnouncementStatusType, AnnouncementTargetType, AnnouncementTypesType, EnrollmentStatus, MaterialType, NotificationPriority, NotificationType, ResultGrade, SubmissionStatus, UserRole } from "../constants";
 
 export interface UserSchemaProps extends Document  {
     username: string;
@@ -93,13 +93,26 @@ export type AnnouncementSchemaProps = {
 };
 
 // Notification Schema Types
+export type NotificationMetadata = {
+    announcementId?: Types.ObjectId;
+    resultId?: Types.ObjectId;
+    assessmentId?: Types.ObjectId;
+    submissionId?: Types.ObjectId;
+    courseId?: Types.ObjectId;
+    // Additional context for message templates
+    [key: string]: any;
+};
+
 export type NotificationSchemaProps = {
     message: string;
     creator: Types.ObjectId;
     type: NotificationType;
     recipients: Types.ObjectId[];
-    announcementId?: Types.ObjectId;
+    metadata?: NotificationMetadata;
+    priority?: NotificationPriority;
+    expiresAt?: Date;
     isRead: boolean;
+    readAt?: Date;
     deletedAt: Date | null;
 }
 

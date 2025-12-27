@@ -1,5 +1,5 @@
 import mongoose, { Schema, Types } from "mongoose";
-import { AvailableNotificationTypes, NotificationTypeEnum } from "../constants";
+import { AvailableNotificationPriorities, AvailableNotificationTypes, NotificationPriorityEnum, NotificationTypeEnum } from "../constants";
 import { NotificationSchemaProps } from "../types/common.types";
 
 
@@ -14,25 +14,35 @@ const notificationSchema = new Schema<NotificationSchemaProps>({
         ref: "User",
         required: true,
     },
-    announcementId: {
-        type: Schema.Types.ObjectId,
-        ref: "Announcement",
-    },
     type: {
         type: String,
         enum: AvailableNotificationTypes,
         default: NotificationTypeEnum.ANNOUNCEMENT,
     },
-    isRead: {
-        type: Boolean,
-        default: false,
-    },
     recipients: [
         {
             type: Schema.Types.ObjectId,
             ref: "User",
+            required: true,
         }
     ],
+    // priority: {
+    //     type: String,
+    //     enum: AvailableNotificationPriorities,
+    //     default: NotificationPriorityEnum.NORMAL,
+    // },
+    expiresAt: {
+        type: Date,
+        default: null,
+    },
+    isRead: {
+        type: Boolean,
+        default: false,
+    },
+    readAt: {
+        type: Date,
+        default: null,
+    },
     deletedAt: {
         type: Date,
         default: null,
@@ -42,9 +52,11 @@ const notificationSchema = new Schema<NotificationSchemaProps>({
     timestamps: true,
 });
 
-// Index for faster lookups of notifications for a given recipient by type
-notificationSchema.index({ recipients: 1, type: 1 });
+// Indexes for faster lookups
+notificationSchema.index({ recipients: 1, type: 1, isRead: 1 });
+notificationSchema.index({ recipients: 1, createdAt: -1 });
+// notificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index for auto-deletion
 
-const Notification = mongoose.model("Notification", notificationSchema);
+const Notification = mongoose.model<NotificationSchemaProps>("Notification", notificationSchema);
 
 export default Notification;

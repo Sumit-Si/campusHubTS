@@ -15,7 +15,9 @@ const config = {
     REFRESH_TOKEN_MAX_AGE: Number(process.env.REFRESH_TOKEN_MAX_AGE) as number,
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY as string,
-    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+    REDIS_HOST: process.env.REDIS_HOST || "localhost" as string,
+    REDIS_PORT: Number(process.env.REDIS_PORT) || 6379 as number,
 }
 
 export default config;

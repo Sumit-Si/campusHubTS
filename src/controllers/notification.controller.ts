@@ -29,7 +29,7 @@ const getMyNotifications = asyncHandler(async (req, res) => {
     const filters: QueryFilter<NotificationSchemaProps> = {
         deletedAt: null,
         // Only notifications where the current user is a recipient
-        recipients: req.user!._id,
+        // recipients: req.user!._id,
     };
 
     if (search && typeof search === "string") {
@@ -43,7 +43,6 @@ const getMyNotifications = asyncHandler(async (req, res) => {
     try {
         const notifications = await Notification.find(filters)
             .populate("creator", "username fullName avatar")
-            .populate("announcementId", "title target")
             .sort({ [sortBy]: sortOrder })
             .skip(skip)
             .limit(limit);
@@ -96,7 +95,6 @@ const getAllUnreadNotifications = asyncHandler(async (req, res) => {
             deletedAt: null,
         })
             .populate("creator", "username fullName avatar")
-            .populate("announcementId", "title target")
             .sort({ [sortBy]: sortOrder })
             .skip(skip)
             .limit(limit);
@@ -144,6 +142,7 @@ const updateNotificationById = asyncHandler(async (req, res) => {
 
     const updateNotification = await Notification.findByIdAndUpdate(notificationObjectId, {
         isRead: true,
+        readAt: new Date(),
     }, { new: true });
 
     if (!updateNotification) {
@@ -168,7 +167,7 @@ const updateBulkNotifications = asyncHandler(async (req, res) => {
         {
             _id: { $in: notificationObjectIds },
             isRead: false,
-            
+
             deletedAt: null,
         },
         {

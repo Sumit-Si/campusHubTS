@@ -8,9 +8,9 @@ dbConnect()
     .then(() => {
         app.listen(PORT, () => {
             console.log("Connected ✅");
-            
             console.log(`Server is running at PORT:${PORT}`);
-        })}
+        })
+    }
     )
     .catch((error) => {
         console.log("Mongodb connection error ❌", error);

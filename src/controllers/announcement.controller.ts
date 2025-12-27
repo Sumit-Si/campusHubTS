@@ -108,12 +108,13 @@ const publishAnnouncementById = asyncHandler(async (req, res) => {
         throw new ApiError({ statusCode: 500, message: "Problem while publishing announcement" });
     }
 
-    // Create notifications for students enrolled in the course
+    // Queue notifications for students enrolled in the course (async, non-blocking)
     if (publishAnnouncement.course && publishAnnouncement.status === AnnouncementStatusEnum.PUBLISHED) {
         await createAnnouncementNotification({
             courseId: publishAnnouncement.course,
             announcementId: announcementObjectId,
             creatorId: req.user!._id,
+            message: publishAnnouncement.message,
         });
     }
 

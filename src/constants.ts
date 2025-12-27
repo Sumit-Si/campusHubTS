@@ -68,14 +68,28 @@ export const AnnouncementTypesEnum = {
 export const AvailableAnnouncementTypes = Object.values(AnnouncementTypesEnum) as readonly AnnouncementTypesType[];
 
 // Notification constants
-export type NotificationType = "announcement" | "result";
+export type NotificationType = "announcement" | "result" | "assessment" | "submission";
 
 export const NotificationTypeEnum = {
     ANNOUNCEMENT: "announcement",
     RESULT: "result",
+    ASSESSMENT: "assessment",
+    SUBMISSION: "submission",
 } as const;
 
 export const AvailableNotificationTypes = Object.values(NotificationTypeEnum) as readonly string[];
+
+// Notification priority levels
+export type NotificationPriority = "low" | "normal" | "high" | "urgent";
+
+export const NotificationPriorityEnum = {
+    LOW: "low",
+    NORMAL: "normal",
+    HIGH: "high",
+    URGENT: "urgent",
+} as const;
+
+export const AvailableNotificationPriorities = Object.values(NotificationPriorityEnum) as readonly NotificationPriority[];
 
 // Submission constants
 export type SubmissionStatus = "draft" | "submitted" | "graded" | "late";

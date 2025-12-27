@@ -2,25 +2,26 @@ import { Router } from "express";
 import { login, register, logout, profile, generateApiKey, refreshAccessToken, currentUser } from "../controllers/auth.controller";
 import { apiKeyValidator, loginValidator, registerValidator } from "../validators";
 import { validate } from "../middlewares/validate.middleware";
-import {jwtVerify} from "../middlewares/auth.middleware";
+import { jwtVerify } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/multer.middleware";
+import { authLimiter } from "../config/rateLimiters";
 
 const router = Router();
 
 // register
 router
     .route("/register")
-    .post(upload.single("avatar"),validate(registerValidator),register);
+    .post(authLimiter, upload.single("avatar"), validate(registerValidator), register);
 
 // login
 router
     .route("/login")
-    .post(validate(loginValidator),login);
+    .post(authLimiter, validate(loginValidator), login);
 
 // logout
 router
     .route("/logout")
-    .post(jwtVerify,logout);
+    .post(jwtVerify, logout);
 
 // profile
 router
