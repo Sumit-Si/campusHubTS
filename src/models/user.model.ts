@@ -41,6 +41,10 @@ const userSchema = new Schema<UserSchemaProps>({
     },
     refreshToken: {
         type: String,
+    },
+    deletedAt: {
+        type: Date,
+        default: null,
     }
 }, {
     timestamps: true,

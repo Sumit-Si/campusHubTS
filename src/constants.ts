@@ -39,8 +39,8 @@ export const AvailableEnrollmentStatus = Object.values(EnrollmentStatusEnum) as 
 
 // Announcement constants
 export type AnnouncementStatusType = "draft" | "published";
-export type AnnouncementTargetType = "course_students" | "department_students" |
-    "all_users" | "admins_only";
+export type AnnouncementTargetType = "course_students" |
+    "all_users" | "faculy_only";
 export type AnnouncementTypesType = "info" | "warning" | "event";
 
 export const AnnouncementStatusEnum = {
@@ -52,9 +52,9 @@ export const AvailableAnnouncementStatus = Object.values(AnnouncementStatusEnum)
 
 export const AnnouncementTargetEnum = {
     COURSE_STUDENTS: "course_students",
-    DEPARTMENT_STUDENTS: "department_students",
-    ALL_USERS: "all_users", // admin only
-    ADMINS_ONLY: "admins_only",
+    // DEPARTMENT_STUDENTS: "department_students",
+    ALL_USERS: "all_users",
+    FACULTY_ONLY: "faculy_only",
 } as const;
 
 export const AvailableAnnouncementTargetStatus = Object.values(AnnouncementTargetEnum) as readonly AnnouncementTargetType[];

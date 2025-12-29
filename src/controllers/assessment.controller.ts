@@ -6,6 +6,10 @@ import Course from "../models/course.model";
 import { GetRequestPayloads } from "../types/common.types";
 import { deleteFromCloudinary, uploadOnCloudinary } from "../config/cloudinary";
 import { QueryFilter, Types } from "mongoose";
+import fs from "fs";
+import { logger } from "../config/winston";
+import { AnnouncementTargetEnum } from "../constants";
+import { createAnnouncementNotification } from "../services/notification.service";
 
 type CreateAssessmentRequestBody = {
     title: string;
@@ -25,7 +29,7 @@ const createAssessment = asyncHandler(async (req, res) => {
     const course = await Course.findOne({
         _id: courseIdObjectId,
         deletedAt: null,
-    }).select("_id title creator");
+    }).lean().select("_id title creator");
 
     if (!course) {
         throw new ApiError({
@@ -46,7 +50,7 @@ const createAssessment = asyncHandler(async (req, res) => {
         course: courseIdObjectId,
         dueDate,
         deletedAt: null,
-    }).select("_id title dueDate");
+    }).lean().select("_id title dueDate");
 
     if (existingAssessment) {
         throw new ApiError({
@@ -55,7 +59,6 @@ const createAssessment = asyncHandler(async (req, res) => {
         });
     }
 
-    // Handle file uploads - only after all validations pass
     const assessmentLocalFiles = req.files as Express.Multer.File[] | undefined;
     const uploadedFiles: Array<{ url: string; public_id: string }> = [];
 
@@ -63,6 +66,7 @@ const createAssessment = asyncHandler(async (req, res) => {
         try {
             // Filter out files without paths
             const validFiles = assessmentLocalFiles.filter((file) => file?.path);
+            logger.info("validFiles", validFiles);
 
             if (validFiles.length > 0) {
                 const uploadResults = await Promise.all(
@@ -96,6 +100,12 @@ const createAssessment = asyncHandler(async (req, res) => {
                 await Promise.all(
                     uploadedFiles.map((file) => deleteFromCloudinary(file.public_id))
                 );
+
+                // local files cleanup
+                await Promise.all(
+                    assessmentLocalFiles.map((file) => fs.promises.unlink(file?.path)
+                        .catch(() => { logger.error("Failed to delete local file", file) }))
+                );
             }
 
             // Re-throw ApiError as-is, wrap others
@@ -126,6 +136,21 @@ const createAssessment = asyncHandler(async (req, res) => {
             .populate("course", "title")
             .populate("creator", "username fullName avatar");
 
+        if(!createdAssessment) {
+            throw new ApiError({
+                statusCode: 500,
+                message: "Problem while creating assessment",
+            });
+        }
+
+        await createAnnouncementNotification({
+            announcementTitle: createdAssessment.title,
+            courseId: courseIdObjectId,
+            announcementId: createdAssessment._id,
+            creatorId: userId!,
+            target: AnnouncementTargetEnum.COURSE_STUDENTS,
+        });
+
         res.status(201).json(
             new ApiResponse({
                 statusCode: 201,
@@ -139,6 +164,14 @@ const createAssessment = asyncHandler(async (req, res) => {
             await Promise.all(
                 uploadedFiles.map((file) => deleteFromCloudinary(file.public_id))
             );
+        }
+
+        // local files cleanup
+        if (assessmentLocalFiles && assessmentLocalFiles.length > 0) {
+            await Promise.all(
+                assessmentLocalFiles.map((file) => fs.promises.unlink(file.path)
+                    .catch(() => { logger.error("Failed to delete local file", file) }))
+            )
         }
 
         // Re-throw ApiError as-is, wrap others
@@ -181,13 +214,14 @@ const getAllAssessments = asyncHandler(async (req, res) => {
     if (userRole === "student") {
         // This would require checking enrollments - simplified for now
         // In production, you'd want to join with Enrollment collection
+        // TODO: implement join with enrollment table
     }
 
     const skip = (page - 1) * limit;
     const sortOrder = order === "asc" ? 1 : -1;
 
     const assessments = await Assessment.find(filters)
-        .populate("course", "title")
+        .populate("course", "title creator")
         .populate("creator", "username fullName")
         .sort({ [sortBy]: sortOrder })
         .skip(skip)

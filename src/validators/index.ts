@@ -225,11 +225,12 @@ const createAnnouncementValidator = z.object({
         .optional(),
 
     courseId: z.string()
-        .nonempty("Course id is required")
+        // .nonempty("Course id is required")
         .refine(Types.ObjectId.isValid, {
             message: "Invalid course id"
         })
-        .trim(),
+        .trim()
+        .optional(),
 
     publishedAt: z
         .coerce
@@ -255,11 +256,12 @@ const createAnnouncementValidator = z.object({
 
 const announcementIdParamValidator = z.object({
     id: z.string()
-        .nonempty("Announcement id is required")
         .refine(Types.ObjectId.isValid, {
             message: "Invalid announcement id"
         })
-        .trim(),
+        .trim()
+        .optional()
+    ,
 });
 
 const publishAnnouncementValidator = z.object({
@@ -280,15 +282,20 @@ const notificationIdParamValidator = z.object({
 });
 
 const updateBulkNotificationsValidator = z.object({
-    notificationIds: z.array(z.string()
-        .trim()
-        .nonempty("Notification id is required")
-        .refine(
-            (ids) => new Set(ids).size === ids.length, "Duplicate notification ids are not allowed").refine(Types.ObjectId.isValid, {
-                message: "Invalid notification id"
-            }))
+    notificationIds: z
+        .array(
+            z.string()
+                .trim()
+                .nonempty("Notification id is required")
+                .refine((id) => Types.ObjectId.isValid(id), {
+                    message: "Invalid notification id format"
+                })
+        )
         .min(1, "At least one notificationId is required")
-        .max(100, "At most 100 notificationIds are allowed"),
+        .max(100, "At most 100 notificationIds are allowed")
+        .refine((ids) => new Set(ids).size === ids.length, {
+            message: "Duplicate notification ids are not allowed"
+        })
 });
 
 

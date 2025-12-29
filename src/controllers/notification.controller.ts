@@ -29,7 +29,11 @@ const getMyNotifications = asyncHandler(async (req, res) => {
     const filters: QueryFilter<NotificationSchemaProps> = {
         deletedAt: null,
         // Only notifications where the current user is a recipient
-        // recipients: req.user!._id,
+        recipients: req.user!._id,
+        $or: [
+            { expiresAt: { $gt: new Date() } },
+            { expiresAt: null }
+        ]
     };
 
     if (search && typeof search === "string") {
@@ -43,6 +47,7 @@ const getMyNotifications = asyncHandler(async (req, res) => {
     try {
         const notifications = await Notification.find(filters)
             .populate("creator", "username fullName avatar")
+            .populate("recipients", "username fullName avatar")
             .sort({ [sortBy]: sortOrder })
             .skip(skip)
             .limit(limit);
@@ -93,8 +98,13 @@ const getAllUnreadNotifications = asyncHandler(async (req, res) => {
             recipients: req.user!._id,
             isRead: false,
             deletedAt: null,
+            $or: [
+                { expiresAt: { $gt: new Date() } },
+                { expiresAt: null }
+            ],
         })
             .populate("creator", "username fullName avatar")
+            .populate("recipients", "username fullName avatar")
             .sort({ [sortBy]: sortOrder })
             .skip(skip)
             .limit(limit);
@@ -134,6 +144,10 @@ const updateNotificationById = asyncHandler(async (req, res) => {
     const notification = await Notification.findOne({
         _id: notificationObjectId,
         deletedAt: null,
+        $or: [
+            { expiresAt: { $gt: new Date() } },
+            { expiresAt: null }
+        ]
     }).select("isRead");
 
     if (!notification) {
@@ -169,6 +183,10 @@ const updateBulkNotifications = asyncHandler(async (req, res) => {
             isRead: false,
 
             deletedAt: null,
+            $or: [
+                { expiresAt: { $gt: new Date() } },
+                { expiresAt: null }
+            ]
         },
         {
             $set: {
@@ -188,6 +206,49 @@ const updateBulkNotifications = asyncHandler(async (req, res) => {
                 modifiedCount: updateNotifications.modifiedCount
             }
         }))
-})
+});
 
-export { getMyNotifications, updateNotificationById, updateBulkNotifications, getAllUnreadNotifications };
+const deleteNotificationById = asyncHandler(async (req, res) => {
+    const { id } = req.params as { id: string };
+
+    const notificationObjectId = new Types.ObjectId(id);
+
+    const existingNotification = await Notification.findOne({
+        _id: notificationObjectId,
+        deletedAt: null,
+        $or: [
+            { expiresAt: { $gt: new Date() } },
+            { expiresAt: null },
+        ],
+    }).select("_id");
+
+    if (!existingNotification) {
+        throw new ApiError({
+            statusCode: 400,
+            message: "Notification not exists",
+        });
+    }
+
+    const deleteNotification = await Notification.findByIdAndUpdate(notificationObjectId, {
+        deletedAt: new Date(),
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30)  // 30 days for TTL (auto deletion)
+    }, {
+        new: true,
+    });
+
+    if (!deleteNotification) {
+        throw new ApiError({
+            statusCode: 500,
+            message: "Problem while deleting notification",
+        });
+    }
+
+    res.status(200)
+        .json(new ApiResponse({
+            statusCode: 200,
+            data: deleteNotification,
+            message: "Notification deleted successfully",
+        }));
+});
+
+export { getMyNotifications, updateNotificationById, updateBulkNotifications, getAllUnreadNotifications, deleteNotificationById };

@@ -55,7 +55,7 @@ const notificationSchema = new Schema<NotificationSchemaProps>({
 // Indexes for faster lookups
 notificationSchema.index({ recipients: 1, type: 1, isRead: 1 });
 notificationSchema.index({ recipients: 1, createdAt: -1 });
-// notificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index for auto-deletion
+notificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index for auto-deletion
 
 const Notification = mongoose.model<NotificationSchemaProps>("Notification", notificationSchema);
 

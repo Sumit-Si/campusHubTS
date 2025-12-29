@@ -57,9 +57,9 @@ const announcementSchema = new Schema<AnnouncementSchemaProps>({
     timestamps: true,
 });
 
-announcementSchema.index({ course: 1, creator: 1});
-announcementSchema.index({ course: 1, type: 1});
-announcementSchema.index({ course: 1, target: 1, status: 1, deletedAt: 1});
+announcementSchema.index({ course: 1, creator: 1 });
+announcementSchema.index({ course: 1, type: 1 });
+announcementSchema.index({ course: 1, target: 1, status: 1, deletedAt: 1 });
 
 const Announcement = mongoose.model<AnnouncementSchemaProps>("Announcement", announcementSchema);
 

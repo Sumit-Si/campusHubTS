@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { checkRole, jwtVerify } from "../middlewares/auth.middleware";
-import { getAllUnreadNotifications, getMyNotifications, updateBulkNotifications, updateNotificationById } from "../controllers/notification.controller";
+import { deleteNotificationById, getAllUnreadNotifications, getMyNotifications, updateBulkNotifications, updateNotificationById } from "../controllers/notification.controller";
 import { AvailableUserRoles } from "../constants";
 import { validate, validateParams } from "../middlewares/validate.middleware";
 import { notificationIdParamValidator, updateBulkNotificationsValidator } from "../validators";
@@ -22,8 +22,8 @@ router
 // Update read status by id -- Single
 router
     .route("/:id/read")
-    .patch(jwtVerify, 
-        checkRole(AvailableUserRoles), 
+    .patch(jwtVerify,
+        checkRole(AvailableUserRoles),
         validateParams(notificationIdParamValidator),
         updateNotificationById);
 
@@ -35,5 +35,14 @@ router
         checkRole(AvailableUserRoles),
         validate(updateBulkNotificationsValidator),
         updateBulkNotifications);
+
+// Delete a notification by id
+router
+    .route("/:id/delete")
+    .delete(jwtVerify,
+        checkRole(AvailableUserRoles),
+        validateParams(notificationIdParamValidator),
+        deleteNotificationById,
+    )
 
 export default router;

@@ -9,6 +9,7 @@ export interface UserSchemaProps extends Document  {
     role: UserRole;
     avatar?: string;
     refreshToken?: string;
+    deletedAt: Date | null;
     isPasswordCorrect(password: string): Promise<boolean>;
     generateAccessToken(): string;
     generateRefreshToken(): string;

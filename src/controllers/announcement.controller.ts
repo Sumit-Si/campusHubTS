@@ -1,5 +1,5 @@
 import { QueryFilter, Types } from "mongoose";
-import { AnnouncementStatusEnum, AnnouncementStatusType, AnnouncementTargetEnum, AnnouncementTargetType, AnnouncementTypesType, UserRolesEnum } from "../constants";
+import { AnnouncementStatusEnum, AnnouncementTargetEnum, AnnouncementTargetType, AnnouncementTypesType, UserRolesEnum } from "../constants";
 import Announcement from "../models/announcement.model";
 import Course from "../models/course.model";
 import { AnnouncementSchemaProps, GetRequestPayloads } from "../types/common.types";
@@ -79,16 +79,27 @@ const publishAnnouncementById = asyncHandler(async (req, res) => {
     const { status, publishedAt } = req.body as Pick<CreateAnnouncementRequestBody, "status" | "courseId" | "publishedAt">
     const { id } = req.params as { id: string };
 
-    const announcement = await Announcement.findOne({
-        _id: id,
+    const announcementObjectId = new Types.ObjectId(id);
+
+    // Check if announcement already Published
+    const checkAnnouncementIsPublished = await Announcement.findOne({
+        _id: announcementObjectId,
+        status: AnnouncementStatusEnum.PUBLISHED,
         deletedAt: null,
-    }).select("title course status");
+    }).select("_id");
+
+    if(checkAnnouncementIsPublished) {
+        throw new ApiError({ statusCode: 400, message: "Announcement already published" });
+    }
+
+    const announcement = await Announcement.findOne({
+        _id: announcementObjectId,
+        deletedAt: null,
+    }).select("title course status target");
 
     if (!announcement) {
         throw new ApiError({ statusCode: 404, message: "Announcement not exists" });
     }
-
-    const announcementObjectId = new Types.ObjectId(id);
 
     let publishDate: Date | null = null;
     if (!publishedAt) { publishDate = new Date(); }
@@ -114,9 +125,19 @@ const publishAnnouncementById = asyncHandler(async (req, res) => {
             courseId: publishAnnouncement.course,
             announcementId: announcementObjectId,
             creatorId: req.user!._id,
-            message: publishAnnouncement.message,
+            announcementTitle: announcement.title,
         });
     }
+
+    if(publishAnnouncement.status === AnnouncementStatusEnum.PUBLISHED) {
+        await createAnnouncementNotification({
+            announcementId: announcementObjectId,
+            creatorId: req.user!._id,
+            target: announcement.target,
+            announcementTitle: announcement.title,
+        });
+    }
+
 
     res.status(200)
         .json(new ApiResponse({
