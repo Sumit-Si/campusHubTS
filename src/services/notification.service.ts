@@ -1,9 +1,11 @@
 import { Types } from "mongoose";
 import Notification from "../models/notification.model";
 import Enrollment from "../models/enrollment.model";
-import { AnnouncementTargetEnum, AnnouncementTargetType, NotificationTypeEnum, UserRolesEnum } from "../constants";
+import { AnnouncementTargetEnum, AnnouncementTargetType, NotificationType, NotificationTypeEnum, UserRolesEnum } from "../constants";
 import User from "../models/user.model";
 import { logger } from "../config/winston";
+import { ApiError } from "../utils/ApiError";
+import { NotificationSchemaProps } from "../types/common.types";
 
 export type AnnouncementNotification = {
     courseId?: Types.ObjectId;
@@ -14,6 +16,90 @@ export type AnnouncementNotification = {
     expiresAt?: Date | null;
 }
 
+export type NotificationDataProps = {
+    title: string;
+    courseId?: Types.ObjectId;
+    announcementId?: Types.ObjectId;
+    creatorId: Types.ObjectId;
+    expiresAt?: Date | null;
+    type: NotificationType;
+    target?: AnnouncementTargetType;
+    targetUserIds?: Types.ObjectId[];
+}
+
+const createNotification = async ({ courseId, announcementId, creatorId, expiresAt, title, type, targetUserIds, target }: NotificationDataProps) => {
+    logger.info("creating notification");
+
+    if ((type === NotificationTypeEnum.RESULT || type === NotificationTypeEnum.SUBMISSION) && targetUserIds?.length === 0) return;
+
+    if (type === NotificationTypeEnum.ANNOUNCEMENT || type === NotificationTypeEnum.ASSESSMENT) {
+        if (target === AnnouncementTargetEnum.COURSE_STUDENTS) {
+            if (!courseId) {
+                throw new ApiError({ statusCode: 400, message: "Course id is required for course students" });
+            }
+
+            const enrolledUsers = await Enrollment.find({
+                course: courseId,
+                deletedAt: null,
+            }).select("user").lean();
+
+            targetUserIds = [];
+            enrolledUsers.map((u) => targetUserIds?.push(u.user));
+        }
+        else if (target === AnnouncementTargetEnum.ALL_USERS) {
+            const users = await User.find({
+                deletedAt: null,
+            }).select("_id").lean();
+
+            targetUserIds = [];
+            users.map((u) => targetUserIds?.push(u._id));
+        }
+        else if (target === AnnouncementTargetEnum.FACULTY_ONLY) {
+            const users = await User.find({
+                role: UserRolesEnum.FACULTY,
+                deletedAt: null,
+            }).select("_id").lean();
+
+            targetUserIds = [];
+            users.map((u) => targetUserIds?.push(u._id));
+        }
+        else {
+            targetUserIds = [creatorId]
+        }
+    }
+
+    if (targetUserIds?.length === 0) return;
+
+    const notifications = targetUserIds?.map((recipient) => ({
+        message: `New Notification: ${title}`,
+        creator: creatorId,
+        type,
+        recipients: [recipient],
+        expiresAt,
+        isRead: false,
+    }));
+
+    if (!notifications) return;
+
+    try {
+        const BATCH_SIZE = 100;
+        for (let i = 0; i < notifications?.length; i += BATCH_SIZE) {
+            const batch = notifications?.slice(i, i + BATCH_SIZE);
+            console.log("Batch: ", batch);
+
+            await Notification.insertMany(batch, { ordered: false });
+        }
+    } catch (error) {
+        logger.error("Error creating notification", error);
+        throw error;
+    }
+
+}
+
+/**
+ * 
+ * @deprecated
+ */
 const createAnnouncementNotification = async ({ courseId, announcementId, creatorId, expiresAt, target, announcementTitle }: AnnouncementNotification) => {
     logger.info("creating announcement notification");
     let recipients: Types.ObjectId[] = [];
@@ -78,4 +164,5 @@ const createAnnouncementNotification = async ({ courseId, announcementId, creato
 };
 export {
     createAnnouncementNotification,
+    createNotification,
 }

@@ -8,8 +8,8 @@ import { deleteFromCloudinary, uploadOnCloudinary } from "../config/cloudinary";
 import { QueryFilter, Types } from "mongoose";
 import fs from "fs";
 import { logger } from "../config/winston";
-import { AnnouncementTargetEnum } from "../constants";
-import { createAnnouncementNotification } from "../services/notification.service";
+import { AnnouncementTargetEnum, NotificationTypeEnum } from "../constants";
+import { createAnnouncementNotification, createNotification } from "../services/notification.service";
 
 type CreateAssessmentRequestBody = {
     title: string;
@@ -128,7 +128,7 @@ const createAssessment = asyncHandler(async (req, res) => {
             course: courseIdObjectId,
             creator: userId,
             maxMarks,
-            type: type || "quiz",
+            type,
             assessmentFiles: uploadedFiles.map((file) => file.url),
         });
 
@@ -143,12 +143,14 @@ const createAssessment = asyncHandler(async (req, res) => {
             });
         }
 
-        await createAnnouncementNotification({
-            announcementTitle: createdAssessment.title,
+        await createNotification({
+            title: `${createdAssessment.title}`,
             courseId: courseIdObjectId,
-            announcementId: createdAssessment._id,
             creatorId: userId!,
             target: AnnouncementTargetEnum.COURSE_STUDENTS,
+            type: NotificationTypeEnum.ASSESSMENT,
+            targetUserIds: [],
+            expiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
         });
 
         res.status(201).json(

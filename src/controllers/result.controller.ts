@@ -6,9 +6,10 @@ import Submission from "../models/submission.model";
 import Assessment from "../models/assessment.model";
 import Enrollment from "../models/enrollment.model";
 import { calculateGrade } from "../utils/gradeCalculator";
-import { SubmissionStatusEnum, UserRolesEnum } from "../constants";
+import { AnnouncementTargetEnum, NotificationTypeEnum, SubmissionStatusEnum, UserRolesEnum } from "../constants";
 import { Types } from "mongoose";
 import { GetRequestPayloads } from "../types/common.types";
+import { createNotification } from "../services/notification.service";
 
 type CreateBulkResultsRequestBody = {
     assessmentId: string;
@@ -51,6 +52,7 @@ const createBulkResults = asyncHandler(async (req, res) => {
 
     const course = assessment.course as Types.ObjectId;
     const createdResults = [];
+    const affectedUserIds: Set<Types.ObjectId> = new Set();
 
     for (const resultData of results) {
         const { submissionId, marks, feedback, remarks } = resultData;
@@ -71,6 +73,7 @@ const createBulkResults = asyncHandler(async (req, res) => {
 
         // Verify enrollment exists
         const user = submission.user as Types.ObjectId;
+        affectedUserIds.add(user._id);
         const enrollment = await Enrollment.findOne({
             user: user._id,
             course: course._id,
@@ -152,6 +155,28 @@ const createBulkResults = asyncHandler(async (req, res) => {
         .populate("user", "username fullName")
         .populate("assessment", "title maxMarks")
         .populate("submission", "submissionDate status");
+
+    if (!populatedResults) {
+        throw new ApiError({
+            statusCode: 500,
+            message: "Problem while creating results",
+        });
+    }
+
+    if (affectedUserIds.size > 0) {
+        const affectedUserIdsArray: Types.ObjectId[] = Array.from(affectedUserIds) || [];
+
+        await createNotification({
+            courseId: assessment.course!,
+            title: `Your results for ${assessment.title} assessment is now available`,
+            creatorId: userId!,
+            // target: AnnouncementTargetEnum.COURSE_STUDENTS,
+            targetUserIds: affectedUserIdsArray,
+            type: NotificationTypeEnum.RESULT,
+            expiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+        });
+    }
+
 
     res.status(201).json(
         new ApiResponse({
@@ -258,9 +283,28 @@ const createSingleResult = asyncHandler(async (req, res) => {
 
     const populatedResult = await Result.findById(result._id)
         .populate("user", "username fullName avatar")
-        .populate("assessment", "title maxMarks type")
+        .populate("assessment", "title maxMarks course type")
         .populate("submission", "submissionDate status")
         .populate("course", "title");
+
+    if (!populatedResult) {
+        throw new ApiError({
+            statusCode: 500,
+            message: "Problem while creating result",
+        });
+    }
+
+    if (populatedResult) {
+        await createNotification({
+            courseId: assessment.course!,
+            title: `Your result for ${assessment.title} assessment is now available`,
+            creatorId: userId!,
+            // target: AnnouncementTargetEnum.COURSE_STUDENTS,
+            targetUserIds: [user],
+            type: NotificationTypeEnum.RESULT,
+            expiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+        });
+    }
 
     res.status(201).json(
         new ApiResponse({

@@ -4,10 +4,11 @@ import { ApiError } from "../utils/ApiError";
 import Submission from "../models/submission.model";
 import Assessment from "../models/assessment.model";
 import Enrollment from "../models/enrollment.model";
-import { SubmissionStatusEnum, UserRolesEnum } from "../constants";
+import { AnnouncementTargetEnum, NotificationTypeEnum, SubmissionStatusEnum, UserRolesEnum } from "../constants";
 import { Types } from "mongoose";
 import { GetRequestPayloads } from "../types/common.types";
 import { deleteFromCloudinary, uploadOnCloudinary } from "../config/cloudinary";
+import { createNotification } from "../services/notification.service";
 
 type CreateSubmissionRequestBody = {
     assessmentId: string;
@@ -148,6 +149,13 @@ const createOrUpdateSubmission = asyncHandler(async (req, res) => {
         .populate("user", "username fullName avatar")
         .populate("assessment", "title maxMarks dueDate");
 
+    if (!createdSubmission) {
+        throw new ApiError({
+            statusCode: 500,
+            message: "Problem while creating submission",
+        });
+    }
+
     res.status(201).json(
         new ApiResponse({
             statusCode: 201,
@@ -159,7 +167,7 @@ const createOrUpdateSubmission = asyncHandler(async (req, res) => {
 
 // Submit the submission (change status from draft to submitted)
 const submitSubmission = asyncHandler(async (req, res) => {
-    const { id } = req.params as {id: string};
+    const { id } = req.params as { id: string };
     const userId = req.user?._id;
 
     const submissionObjectId = new Types.ObjectId(id);
@@ -168,7 +176,7 @@ const submitSubmission = asyncHandler(async (req, res) => {
         _id: submissionObjectId,
         user: userId,
         deletedAt: null,
-    }).populate("assessment", "dueDate maxMarks");
+    }).populate("assessment", "title dueDate maxMarks");
 
     if (!submission) {
         throw new ApiError({
@@ -199,13 +207,33 @@ const submitSubmission = asyncHandler(async (req, res) => {
     // Determine if late submission
     const status = now > dueDate ? SubmissionStatusEnum.LATE : SubmissionStatusEnum.SUBMITTED;
 
-    submission.status = status;
-    submission.submissionDate = now;
-    await submission.save();
+    // submission.status = status;
+    // submission.submissionDate = now;
+    // await submission.save();
 
-    const updatedSubmission = await Submission.findById(submission._id)
-        .populate("user", "username fullName")
+    const updatedSubmission = await Submission.findByIdAndUpdate(submissionObjectId, {
+        status,
+        submissionDate: now,
+    }, { new: true })
+        .populate("user", "_id username fullName")
         .populate("assessment", "title maxMarks dueDate type");
+
+    if (!updatedSubmission) {
+        throw new ApiError({
+            statusCode: 500,
+            message: "Problem while submitting submission",
+        });
+    }
+
+    await createNotification({
+        courseId: assessment.course!,
+        title: `Your submission for ${assessment.title} assessment`,
+        creatorId: userId!,
+        // target: AnnouncementTargetEnum.COURSE_STUDENTS,
+        targetUserIds: [updatedSubmission.user._id],
+        type: NotificationTypeEnum.SUBMISSION,
+        expiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+    });
 
     res.status(200).json(
         new ApiResponse({

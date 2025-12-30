@@ -1,12 +1,12 @@
 import { QueryFilter, Types } from "mongoose";
-import { AnnouncementStatusEnum, AnnouncementTargetEnum, AnnouncementTargetType, AnnouncementTypesType, UserRolesEnum } from "../constants";
+import { AnnouncementStatusEnum, AnnouncementTargetEnum, AnnouncementTargetType, AnnouncementTypesType, NotificationTypeEnum, UserRolesEnum } from "../constants";
 import Announcement from "../models/announcement.model";
 import Course from "../models/course.model";
 import { AnnouncementSchemaProps, GetRequestPayloads } from "../types/common.types";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { asyncHandler } from "../utils/asyncHandler";
-import { createAnnouncementNotification } from "../services/notification.service";
+import { createAnnouncementNotification, createNotification } from "../services/notification.service";
 
 type CreateAnnouncementRequestBody = {
     title: string;
@@ -95,7 +95,7 @@ const publishAnnouncementById = asyncHandler(async (req, res) => {
     const announcement = await Announcement.findOne({
         _id: announcementObjectId,
         deletedAt: null,
-    }).select("title course status target");
+    }).select("title course status target expiresAt");
 
     if (!announcement) {
         throw new ApiError({ statusCode: 404, message: "Announcement not exists" });
@@ -121,20 +121,24 @@ const publishAnnouncementById = asyncHandler(async (req, res) => {
 
     // Queue notifications for students enrolled in the course (async, non-blocking)
     if (publishAnnouncement.course && publishAnnouncement.status === AnnouncementStatusEnum.PUBLISHED) {
-        await createAnnouncementNotification({
+        await createNotification({
             courseId: publishAnnouncement.course,
             announcementId: announcementObjectId,
             creatorId: req.user!._id,
-            announcementTitle: announcement.title,
+            title: `Your announcement for ${announcement.title} title is now published for all enrolled students`,
+            type: NotificationTypeEnum.ANNOUNCEMENT,
+            expiresAt: publishAnnouncement.expiresAt || new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
         });
     }
 
     if(publishAnnouncement.status === AnnouncementStatusEnum.PUBLISHED) {
-        await createAnnouncementNotification({
+        await createNotification({
             announcementId: announcementObjectId,
             creatorId: req.user!._id,
             target: announcement.target,
-            announcementTitle: announcement.title,
+            title: `Your announcement for ${announcement.title} title is now published`,
+            type: NotificationTypeEnum.ANNOUNCEMENT,
+            expiresAt: publishAnnouncement.expiresAt || new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
         });
     }
 
