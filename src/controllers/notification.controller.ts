@@ -143,6 +143,7 @@ const updateNotificationById = asyncHandler(async (req, res) => {
 
     const notification = await Notification.findOne({
         _id: notificationObjectId,
+        recipients: req.user!._id,
         deletedAt: null,
         $or: [
             { expiresAt: { $gt: new Date() } },
@@ -177,9 +178,24 @@ const updateBulkNotifications = asyncHandler(async (req, res) => {
 
     const notificationObjectIds = notificationIds.map(id => new Types.ObjectId(id));
 
+    const notifications = await Notification.find({
+        _id: { $in: notificationObjectIds },
+        recipients: req.user!._id,
+        deletedAt: null,
+        $or: [
+            { expiresAt: { $gt: new Date() } },
+            { expiresAt: null }
+        ]
+    }).select("_id");
+
+    console.log("Notifications: ", notifications);
+
+    const nonExistingNotifications = notificationObjectIds.filter(id => !notifications.some(n => n._id.equals(id)));
+
     const updateNotifications = await Notification.updateMany(
         {
             _id: { $in: notificationObjectIds },
+            recipients: req.user!._id,
             isRead: false,
 
             deletedAt: null,
@@ -203,7 +219,8 @@ const updateBulkNotifications = asyncHandler(async (req, res) => {
             statusCode: 200,
             message: "Notifications marked as read successfully",
             data: {
-                modifiedCount: updateNotifications.modifiedCount
+                modifiedCount: updateNotifications.modifiedCount,
+                invalidIds: nonExistingNotifications,
             }
         }))
 });
@@ -215,6 +232,7 @@ const deleteNotificationById = asyncHandler(async (req, res) => {
 
     const existingNotification = await Notification.findOne({
         _id: notificationObjectId,
+        recipients: req.user!._id,
         deletedAt: null,
         $or: [
             { expiresAt: { $gt: new Date() } },

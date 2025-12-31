@@ -300,7 +300,7 @@ const getSubmissionById = asyncHandler(async (req, res) => {
     );
 });
 
-// Get all submissions for an assessment (Faculty only)
+// Faculty only
 const getSubmissionsByAssessment = asyncHandler(async (req, res) => {
     const { id } = req.params as { id: string };
     const { page: rawPage = "1", limit: rawLimit = "10", sortBy = "createdAt", order = "asc", createdBy } = req.query as unknown as GetRequestPayloads;

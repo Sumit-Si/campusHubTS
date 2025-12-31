@@ -5,7 +5,6 @@ import { AnnouncementTargetEnum, AnnouncementTargetType, NotificationType, Notif
 import User from "../models/user.model";
 import { logger } from "../config/winston";
 import { ApiError } from "../utils/ApiError";
-import { NotificationSchemaProps } from "../types/common.types";
 
 export type AnnouncementNotification = {
     courseId?: Types.ObjectId;
@@ -85,7 +84,7 @@ const createNotification = async ({ courseId, announcementId, creatorId, expires
         const BATCH_SIZE = 100;
         for (let i = 0; i < notifications?.length; i += BATCH_SIZE) {
             const batch = notifications?.slice(i, i + BATCH_SIZE);
-            console.log("Batch: ", batch);
+            // console.log("Batch: ", batch);
 
             await Notification.insertMany(batch, { ordered: false });
         }
@@ -97,8 +96,8 @@ const createNotification = async ({ courseId, announcementId, creatorId, expires
 }
 
 /**
- * 
- * @deprecated
+ * Creates a notification for a course announcement
+ * @deprecated use createNotification instead for better flexibility
  */
 const createAnnouncementNotification = async ({ courseId, announcementId, creatorId, expiresAt, target, announcementTitle }: AnnouncementNotification) => {
     logger.info("creating announcement notification");
