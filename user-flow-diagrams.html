@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusHub - User Flow Diagrams</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h2 {
+            color: #1e40af;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        .flow-container {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 8px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            min-width: max-content;
+        }
+
+        .flow-box {
+            background: white;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 15px 25px;
+            min-width: 180px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .flow-box.start {
+            background: #dbeafe;
+            border-color: #2563eb;
+            font-weight: 600;
+        }
+
+        .flow-box.end {
+            background: #dcfce7;
+            border-color: #16a34a;
+            font-weight: 600;
+        }
+
+        .flow-box.decision {
+            background: #fef3c7;
+            border-color: #f59e0b;
+            border-radius: 50px;
+        }
+
+        .flow-box.admin {
+            border-color: #dc2626;
+            background: #fee2e2;
+        }
+
+        .flow-box.faculty {
+            border-color: #059669;
+            background: #d1fae5;
+        }
+
+        .flow-box.student {
+            border-color: #2563eb;
+            background: #dbeafe;
+        }
+
+        .arrow {
+            margin: 0 15px;
+            color: #3b82f6;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .arrow-down {
+            text-align: center;
+            color: #3b82f6;
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .flow-label {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin: 5px 15px;
+            font-style: italic;
+        }
+
+        .state-diagram {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .state-card {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .state-card h3 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .state-list {
+            list-style: none;
+        }
+
+        .state-list li {
+            padding: 8px 0;
+            color: #475569;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .state-list li::before {
+            content: "→ ";
+            color: #3b82f6;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .interaction-map {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+        }
+
+        .interaction-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+
+        .interaction-step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .interaction-step strong {
+            display: block;
+            color: #1e40af;
+            margin-bottom: 5px;
+        }
+
+        .interaction-arrow {
+            color: #3b82f6;
+            font-size: 20px;
+            margin: 0 10px;
+        }
+
+        .api-flow {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+        }
+
+        .api-flow .method {
+            color: #fbbf24;
+            font-weight: bold;
+        }
+
+        .api-flow .endpoint {
+            color: #60a5fa;
+        }
+
+        .api-flow .response {
+            color: #34d399;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .legend-box {
+            width: 40px;
+            height: 30px;
+            border: 2px solid;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .flow-row {
+                flex-direction: column;
+            }
+            .arrow {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 CampusHub - Detailed User Flow Diagrams</h1>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-box" style="background: #dbeafe; border-color: #2563eb;"></div>
+                <span>Start Point</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #dcfce7; border-color: #16a34a;"></div>
+                <span>End Point</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fef3c7; border-color: #f59e0b;"></div>
+                <span>Decision</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #fee2e2; border-color: #dc2626;"></div>
+                <span>Admin Action</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #d1fae5; border-color: #059669;"></div>
+                <span>Faculty Action</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-box" style="background: #dbeafe; border-color: #2563eb;"></div>
+                <span>Student Action</span>
+            </div>
+        </div>
+
+        <h2>1. Authentication & Authorization Flow</h2>
+        <div class="flow-container">
+            <div class="flow-row">
+                <div class="flow-box start">Landing Page</div>
+                <div class="arrow">→</div>
+                <div class="flow-box decision">Authenticated?</div>
+            </div>
+            <div class="arrow-down">↓ NO</div>
+            <div class="flow-row">
+                <div class="flow-box">Login Page</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Submit Credentials</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: POST /login</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box">Receive JWT Token</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Store in Cookie</div>
+                <div class="arrow">→</div>
+                <div class="flow-box decision">Check Role</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box admin">Admin Dashboard</div>
+                <div class="flow-box faculty">Faculty Dashboard</div>
+                <div class="flow-box student">Student Dashboard</div>
+            </div>
+        </div>
+
+        <div class="api-flow">
+// Authentication API Flow
+<span class="method">POST</span> <span class="endpoint">/api/v1/users/login</span>
+Body: { email, password }
+
+<span class="response">Response: 200 OK</span>
+{
+  "statusCode": 200,
+  "data": {
+    "loggedInUser": { _id, username, email, role, avatar },
+    "accessToken": "jwt...",
+    "refreshToken": "jwt..."
+  }
+}
+
+// Set cookies and redirect based on role
+if (role === "admin") → /admin
+if (role === "faculty") → /faculty
+if (role === "student") → /student
+        </div>
+
+        <h2>2. Student Journey: Enroll in Course → Submit Assessment</h2>
+        <div class="flow-container">
+            <div class="flow-row">
+                <div class="flow-box start student">Student Dashboard</div>
+                <div class="arrow">→</div>
+                <div class="flow-box student">Browse Courses</div>
+                <div class="arrow">→</div>
+                <div class="flow-box student">View Course Details</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box student">Click Enroll</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: POST /enrollments</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Enrollment Created</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box student">My Courses</div>
+                <div class="arrow">→</div>
+                <div class="flow-box student">View Materials</div>
+                <div class="arrow">→</div>
+                <div class="flow-box student">View Assessments</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box student">Start Submission</div>
+                <div class="arrow">→</div>
+                <div class="flow-box student">Upload Files</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: POST /submissions</div>
+            </div>
+            <div class="arrow-down">↓ Save as Draft</div>
+            <div class="flow-row">
+                <div class="flow-box student">Review Submission</div>
+                <div class="arrow">→</div>
+                <div class="flow-box student">Click Submit</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: PATCH /submissions/:id/submit</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box end">Submission Complete</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Notification Sent</div>
+                <div class="arrow">→</div>
+                <div class="flow-box student">Wait for Grading</div>
+            </div>
+        </div>
+
+        <div class="api-flow">
+// Student Submission Flow
+<span class="method">GET</span> <span class="endpoint">/api/v1/courses</span> → Browse courses
+
+<span class="method">POST</span> <span class="endpoint">/api/v1/enrollments</span>
+Body: { courseId }
+
+<span class="method">GET</span> <span class="endpoint">/api/v1/courses/:id/materials</span> → View materials
+
+<span class="method">POST</span> <span class="endpoint">/api/v1/submissions</span> (with file upload)
+Body: { assessmentId }
+Files: [submissionFiles]
+Status: "draft"
+
+<span class="method">PATCH</span> <span class="endpoint">/api/v1/submissions/:id/submit</span>
+Status changes: "draft" → "submitted" (or "late" if past due)
+
+<span class="response">Notification created for faculty</span>
+        </div>
+
+        <h2>3. Faculty Journey: Create Course → Grade Submissions</h2>
+        <div class="flow-container">
+            <div class="flow-row">
+                <div class="flow-box start faculty">Faculty Dashboard</div>
+                <div class="arrow">→</div>
+                <div class="flow-box faculty">Create New Course</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: POST /courses</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box faculty">Add Materials</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Upload Files</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: POST /courses/:id/materials</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box faculty">Create Assessment</div>
+                <div class="arrow">→</div>
+                <div class="flow-box faculty">Set Due Date</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: POST /assessments</div>
+            </div>
+            <div class="arrow-down">↓ Students submit</div>
+            <div class="flow-row">
+                <div class="flow-box faculty">View Submissions</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: GET /submissions/assessment/:id</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box faculty">Review Submission</div>
+                <div class="arrow">→</div>
+                <div class="flow-box faculty">Enter Marks</div>
+                <div class="arrow">→</div>
+                <div class="flow-box faculty">Add Feedback</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box decision">Single or Bulk?</div>
+            </div>
+            <div class="flow-row">
+                <div class="flow-box">API: POST /results/single</div>
+                <div class="flow-box">API: POST /results</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box end">Results Published</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Notifications Sent</div>
+            </div>
+        </div>
+
+        <div class="api-flow">
+// Faculty Course Creation & Grading Flow
+<span class="method">POST</span> <span class="endpoint">/api/v1/courses</span>
+Body: { title, content, priceInPaise }
+
+<span class="method">POST</span> <span class="endpoint">/api/v1/courses/:id/materials</span>
+Body: { name, type, content }
+Files: [material files]
+
+<span class="method">POST</span> <span class="endpoint">/api/v1/assessments</span>
+Body: { title, dueDate, courseId, maxMarks, type }
+Files: [assessment files]
+
+<span class="method">GET</span> <span class="endpoint">/api/v1/submissions/assessment/:id</span> → View all submissions
+
+<span class="method">POST</span> <span class="endpoint">/api/v1/results/single</span> (for one student)
+Body: { submissionId, marks, feedback, academicYear }
+
+<span class="method">POST</span> <span class="endpoint">/api/v1/results</span> (bulk grading)
+Body: {
+  assessmentId,
+  academicYear,
+  results: [{ submissionId, marks, feedback }]
+}
+
+<span class="response">Notifications sent to all graded students</span>
+        </div>
+
+        <h2>4. Admin Journey: User Management</h2>
+        <div class="flow-container">
+            <div class="flow-row">
+                <div class="flow-box start admin">Admin Dashboard</div>
+                <div class="arrow">→</div>
+                <div class="flow-box admin">View Analytics</div>
+                <div class="arrow">→</div>
+                <div class="flow-box admin">User Management</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box">API: GET /admin/users</div>
+                <div class="arrow">→</div>
+                <div class="flow-box admin">View All Users</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box admin">Select User</div>
+                <div class="arrow">→</div>
+                <div class="flow-box admin">Change Role</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API: PUT /admin/users/:id/role</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box end">Role Updated</div>
+                <div class="arrow">→</div>
+                <div class="flow-box admin">Create Announcement</div>
+            </div>
+        </div>
+
+        <h2>5. Notification System Flow</h2>
+        <div class="interaction-map">
+            <h3 style="text-align: center; margin-bottom: 20px;">Real-time Notification Delivery</h3>
+
+            <div class="interaction-row">
+                <div class="interaction-step">
+                    <strong>Trigger Event</strong>
+                    <span>Assessment Created<br>Result Published<br>Announcement Posted</span>
+                </div>
+                <div class="interaction-arrow">→</div>
+                <div class="interaction-step">
+                    <strong>Backend Service</strong>
+                    <span>createNotification()<br>Identify Recipients<br>Batch Insert</span>
+                </div>
+                <div class="interaction-arrow">→</div>
+                <div class="interaction-step">
+                    <strong>Database</strong>
+                    <span>Store Notifications<br>Set expiresAt<br>isRead: false</span>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓</div>
+
+            <div class="interaction-row">
+                <div class="interaction-step">
+                    <strong>Frontend Polling</strong>
+                    <span>GET /notifications<br>Every 30 seconds<br>Show Badge Count</span>
+                </div>
+                <div class="interaction-arrow">→</div>
+                <div class="interaction-step">
+                    <strong>User Interaction</strong>
+                    <span>Click Notification<br>Read Content<br>Mark as Read</span>
+                </div>
+                <div class="interaction-arrow">→</div>
+                <div class="interaction-step">
+                    <strong>Update State</strong>
+                    <span>PATCH /notifications/:id/read<br>isRead: true<br>readAt: timestamp</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="api-flow">
+// Notification APIs
+<span class="method">GET</span> <span class="endpoint">/api/v1/notifications</span> → Get all my notifications
+<span class="method">GET</span> <span class="endpoint">/api/v1/notifications/unread</span> → Get unread only
+<span class="method">PATCH</span> <span class="endpoint">/api/v1/notifications/:id/read</span> → Mark single as read
+<span class="method">PATCH</span> <span class="endpoint">/api/v1/notifications/mark-read</span> → Bulk mark as read
+Body: { notificationIds: ["id1", "id2"] }
+        </div>
+
+        <h2>6. State Transitions</h2>
+        <div class="state-diagram">
+            <div class="state-card">
+                <h3>Enrollment Status</h3>
+                <ul class="state-list">
+                    <li>active (enrolled & learning)</li>
+                    <li>completed (finished course)</li>
+                    <li>dropped (unenrolled)</li>
+                </ul>
+            </div>
+
+            <div class="state-card">
+                <h3>Submission Status</h3>
+                <ul class="state-list">
+                    <li>draft (saving progress)</li>
+                    <li>submitted (on time)</li>
+                    <li>late (past deadline)</li>
+                    <li>graded (marks assigned)</li>
+                </ul>
+            </div>
+
+            <div class="state-card">
+                <h3>Announcement Status</h3>
+                <ul class="state-list">
+                    <li>draft (not visible)</li>
+                    <li>published (visible to target)</li>
+                </ul>
+            </div>
+
+            <div class="state-card">
+                <h3>Assessment Types</h3>
+                <ul class="state-list">
+                    <li>quiz (short, timed)</li>
+                    <li>assignment (file upload)</li>
+                    <li>exam (proctored)</li>
+                </ul>
+            </div>
+
+            <div class="state-card">
+                <h3>Material Types</h3>
+                <ul class="state-list">
+                    <li>text (markdown/HTML)</li>
+                    <li>video (streaming)</li>
+                    <li>pdf (downloadable)</li>
+                    <li>article (rich content)</li>
+                </ul>
+            </div>
+
+            <div class="state-card">
+                <h3>User Roles</h3>
+                <ul class="state-list">
+                    <li>admin (full access)</li>
+                    <li>faculty (create & grade)</li>
+                    <li>student (enroll & learn)</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>7. Component Interaction Patterns</h2>
+        <div class="flow-container">
+            <h3 style="margin-bottom: 20px;">Form Submission Pattern</h3>
+            <div class="flow-row">
+                <div class="flow-box">User Input</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">React Hook Form</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Zod Validation</div>
+            </div>
+            <div class="arrow-down">↓ Valid</div>
+            <div class="flow-row">
+                <div class="flow-box">Show Loading</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">API Call (Axios)</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">TanStack Mutation</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box decision">Success?</div>
+            </div>
+            <div class="arrow-down">↓ Yes</div>
+            <div class="flow-row">
+                <div class="flow-box">Invalidate Cache</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Show Toast Success</div>
+                <div class="arrow">→</div>
+                <div class="flow-box end">Redirect/Refresh</div>
+            </div>
+        </div>
+
+        <div class="flow-container">
+            <h3 style="margin-bottom: 20px;">Data Fetching Pattern</h3>
+            <div class="flow-row">
+                <div class="flow-box start">Component Mount</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Custom Hook (useCourses)</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">TanStack Query</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box decision">Cache Hit?</div>
+            </div>
+            <div class="arrow-down">↓ No</div>
+            <div class="flow-row">
+                <div class="flow-box">Show Skeleton</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Fetch from API</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Store in Cache</div>
+            </div>
+            <div class="arrow-down">↓</div>
+            <div class="flow-row">
+                <div class="flow-box end">Render Data</div>
+                <div class="arrow">→</div>
+                <div class="flow-box">Auto-refresh (staleTime)</div>
+            </div>
+        </div>
+
+        <h2>8. Security & Authorization Checks</h2>
+        <div class="interaction-map">
+            <h3 style="text-align: center; margin-bottom: 20px;">Middleware Protection Flow</h3>
+
+            <div class="interaction-row">
+                <div class="interaction-step">
+                    <strong>User Navigates</strong>
+                    <span>/faculty/courses</span>
+                </div>
+                <div class="interaction-arrow">→</div>
+                <div class="interaction-step">
+                    <strong>Next.js Middleware</strong>
+                    <span>Check auth cookie<br>Verify JWT token<br>Extract role</span>
+                </div>
+                <div class="interaction-arrow">→</div>
+                <div class="interaction-step">
+                    <strong>Role Check</strong>
+                    <span>Is Faculty/Admin?</span>
+                </div>
+            </div>
+
+            <div class="arrow-down">↓ Authorized</div>
+
+            <div class="interaction-row">
+                <div class="interaction-step">
+                    <strong>Load Page</strong>
+                    <span>Server Component<br>Fetch initial data</span>
+                </div>
+                <div class="interaction-arrow">→</div>
+                <div class="interaction-step">
+                    <strong>Render UI</strong>
+                    <span>Role-specific layout<br>Conditional features</span>
+                </div>
+                <div class="interaction-arrow">→</div>
+                <div class="interaction-step">
+                    <strong>API Calls</strong>
+                    <span>Include JWT in header<br>Backend validates</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #eff6ff; padding: 30px; border-radius: 8px; margin-top: 40px;">
+            <h2 style="color: #1e40af; border: none; text-align: center;">📋 Implementation Checklist</h2>
+            <div class="state-diagram">
+                <div class="state-card" style="background: #fef3c7;">
+                    <h3>Phase 1: Foundation</h3>
+                    <ul class="state-list">
+                        <li>Setup Next.js project</li>
+                        <li>Configure NextAuth.js</li>
+                        <li>Create base layouts</li>
+                        <li>Setup API client</li>
+                    </ul>
+                </div>
+
+                <div class="state-card" style="background: #dbeafe;">
+                    <h3>Phase 2: Core Features</h3>
+                    <ul class="state-list">
+                        <li>Authentication pages</li>
+                        <li>Dashboard for each role</li>
+                        <li>Course management</li>
+                        <li>Material viewer</li>
+                    </ul>
+                </div>
+
+                <div class="state-card" style="background: #d1fae5;">
+                    <h3>Phase 3: Advanced</h3>
+                    <ul class="state-list">
+                        <li>Assessment system</li>
+                        <li>Grading interface</li>
+                        <li>Results & analytics</li>
+                        <li>Notifications</li>
+                    </ul>
+                </div>
+
+                <div class="state-card" style="background: #fce7f3;">
+                    <h3>Phase 4: Polish</h3>
+                    <ul class="state-list">
+                        <li>Responsive design</li>
+                        <li>Loading states</li>
+                        <li>Error handling</li>
+                        <li>Testing & deployment</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

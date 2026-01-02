@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusHub - Frontend Architecture & Flow</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2563eb;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        h2 {
+            color: #1e40af;
+            font-size: 1.8rem;
+            margin: 40px 0 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3b82f6;
+        }
+
+        h3 {
+            color: #1e293b;
+            font-size: 1.4rem;
+            margin: 30px 0 15px;
+        }
+
+        h4 {
+            color: #475569;
+            font-size: 1.1rem;
+            margin: 20px 0 10px;
+        }
+
+        .section {
+            margin: 30px 0;
+        }
+
+        .flow-diagram {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+
+        .role-card {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .role-card h3 {
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            margin: -20px -20px 15px;
+            text-align: center;
+        }
+
+        .admin-header { background: #dc2626; }
+        .faculty-header { background: #059669; }
+        .student-header { background: #2563eb; }
+
+        .page-list {
+            list-style: none;
+            margin: 15px 0;
+        }
+
+        .page-list li {
+            padding: 8px 12px;
+            margin: 6px 0;
+            background: #f8fafc;
+            border-left: 3px solid #3b82f6;
+            border-radius: 4px;
+            font-size: 0.95rem;
+        }
+
+        .page-list li::before {
+            content: "📄 ";
+            margin-right: 8px;
+        }
+
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .component-card {
+            background: #fefce8;
+            border: 2px solid #fde047;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .component-card h4 {
+            color: #854d0e;
+            margin-bottom: 10px;
+        }
+
+        .component-card ul {
+            list-style: none;
+            font-size: 0.9rem;
+            color: #713f12;
+        }
+
+        .component-card ul li {
+            padding: 4px 0;
+        }
+
+        .component-card ul li::before {
+            content: "⚡ ";
+            color: #ca8a04;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .tech-badge {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 2px solid #3b82f6;
+        }
+
+        .folder-structure {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .folder-structure .folder { color: #fbbf24; }
+        .folder-structure .file { color: #60a5fa; }
+        .folder-structure .component { color: #34d399; }
+
+        .flow-arrow {
+            text-align: center;
+            color: #3b82f6;
+            font-size: 2rem;
+            margin: 20px 0;
+        }
+
+        .feature-box {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .feature-box strong {
+            color: #065f46;
+        }
+
+        .api-endpoint {
+            background: #f3e8ff;
+            border-left: 4px solid #a855f7;
+            padding: 10px 15px;
+            margin: 8px 0;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .route-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+
+        .route-table th {
+            background: #1e40af;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .route-table td {
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .route-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .highlight {
+            background: #fef3c7;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        @media print {
+            body { background: white; }
+            .container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 CampusHub Frontend Architecture</h1>
+        <p class="subtitle">Complete UI/UX Flow for College Portal with Next.js 14+ App Router</p>
+
+        <div class="section">
+            <h2>🛠️ Technology Stack</h2>
+            <div class="tech-stack">
+                <span class="tech-badge">Next.js 14+</span>
+                <span class="tech-badge">TypeScript</span>
+                <span class="tech-badge">Tailwind CSS</span>
+                <span class="tech-badge">shadcn/ui</span>
+                <span class="tech-badge">React Hook Form</span>
+                <span class="tech-badge">Zod Validation</span>
+                <span class="tech-badge">TanStack Query</span>
+                <span class="tech-badge">Zustand</span>
+                <span class="tech-badge">NextAuth.js</span>
+                <span class="tech-badge">Axios</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📁 Project Folder Structure</h2>
+            <div class="folder-structure">
+<span class="folder">src/</span>
+├── <span class="folder">app/</span>
+│   ├── <span class="file">(auth)/</span>
+│   │   ├── <span class="file">login/page.tsx</span>
+│   │   ├── <span class="file">register/page.tsx</span>
+│   │   └── <span class="file">layout.tsx</span>
+│   ├── <span class="file">(dashboard)/</span>
+│   │   ├── <span class="file">admin/</span>
+│   │   │   ├── <span class="file">page.tsx</span>
+│   │   │   ├── <span class="file">users/</span>
+│   │   │   │   ├── <span class="file">page.tsx</span>
+│   │   │   │   └── <span class="file">[id]/page.tsx</span>
+│   │   │   ├── <span class="file">courses/page.tsx</span>
+│   │   │   ├── <span class="file">enrollments/page.tsx</span>
+│   │   │   └── <span class="file">analytics/page.tsx</span>
+│   │   ├── <span class="file">faculty/</span>
+│   │   │   ├── <span class="file">page.tsx</span>
+│   │   │   ├── <span class="file">courses/</span>
+│   │   │   │   ├── <span class="file">page.tsx</span>
+│   │   │   │   ├── <span class="file">create/page.tsx</span>
+│   │   │   │   └── <span class="file">[id]/</span>
+│   │   │   │       ├── <span class="file">page.tsx</span>
+│   │   │   │       ├── <span class="file">materials/page.tsx</span>
+│   │   │   │       ├── <span class="file">assessments/page.tsx</span>
+│   │   │   │       └── <span class="file">enrollments/page.tsx</span>
+│   │   │   ├── <span class="file">assessments/</span>
+│   │   │   │   ├── <span class="file">page.tsx</span>
+│   │   │   │   ├── <span class="file">create/page.tsx</span>
+│   │   │   │   └── <span class="file">[id]/submissions/page.tsx</span>
+│   │   │   ├── <span class="file">grading/page.tsx</span>
+│   │   │   └── <span class="file">announcements/page.tsx</span>
+│   │   ├── <span class="file">student/</span>
+│   │   │   ├── <span class="file">page.tsx</span>
+│   │   │   ├── <span class="file">courses/</span>
+│   │   │   │   ├── <span class="file">page.tsx</span>
+│   │   │   │   ├── <span class="file">browse/page.tsx</span>
+│   │   │   │   └── <span class="file">[id]/</span>
+│   │   │   │       ├── <span class="file">page.tsx</span>
+│   │   │   │       ├── <span class="file">materials/page.tsx</span>
+│   │   │   │       └── <span class="file">assessments/page.tsx</span>
+│   │   │   ├── <span class="file">assessments/</span>
+│   │   │   │   ├── <span class="file">page.tsx</span>
+│   │   │   │   └── <span class="file">[id]/submit/page.tsx</span>
+│   │   │   ├── <span class="file">results/page.tsx</span>
+│   │   │   └── <span class="file">submissions/page.tsx</span>
+│   │   ├── <span class="file">notifications/page.tsx</span>
+│   │   ├── <span class="file">profile/page.tsx</span>
+│   │   └── <span class="file">layout.tsx</span>
+│   ├── <span class="file">api/auth/[...nextauth]/route.ts</span>
+│   ├── <span class="file">layout.tsx</span>
+│   └── <span class="file">page.tsx</span>
+├── <span class="folder">components/</span>
+│   ├── <span class="component">layout/</span>
+│   │   ├── <span class="component">Sidebar.tsx</span>
+│   │   ├── <span class="component">Header.tsx</span>
+│   │   ├── <span class="component">MobileNav.tsx</span>
+│   │   └── <span class="component">Footer.tsx</span>
+│   ├── <span class="component">auth/</span>
+│   │   ├── <span class="component">LoginForm.tsx</span>
+│   │   ├── <span class="component">RegisterForm.tsx</span>
+│   │   └── <span class="component">AuthGuard.tsx</span>
+│   ├── <span class="component">courses/</span>
+│   │   ├── <span class="component">CourseCard.tsx</span>
+│   │   ├── <span class="component">CourseList.tsx</span>
+│   │   ├── <span class="component">CourseForm.tsx</span>
+│   │   ├── <span class="component">MaterialList.tsx</span>
+│   │   ├── <span class="component">MaterialUpload.tsx</span>
+│   │   └── <span class="component">CourseEnrollButton.tsx</span>
+│   ├── <span class="component">assessments/</span>
+│   │   ├── <span class="component">AssessmentCard.tsx</span>
+│   │   ├── <span class="component">AssessmentForm.tsx</span>
+│   │   ├── <span class="component">SubmissionForm.tsx</span>
+│   │   └── <span class="component">GradingInterface.tsx</span>
+│   ├── <span class="component">notifications/</span>
+│   │   ├── <span class="component">NotificationBell.tsx</span>
+│   │   ├── <span class="component">NotificationList.tsx</span>
+│   │   └── <span class="component">NotificationItem.tsx</span>
+│   ├── <span class="component">announcements/</span>
+│   │   ├── <span class="component">AnnouncementCard.tsx</span>
+│   │   ├── <span class="component">AnnouncementForm.tsx</span>
+│   │   └── <span class="component">AnnouncementBanner.tsx</span>
+│   ├── <span class="component">results/</span>
+│   │   ├── <span class="component">ResultCard.tsx</span>
+│   │   ├── <span class="component">GradeChart.tsx</span>
+│   │   └── <span class="component">PerformanceAnalytics.tsx</span>
+│   ├── <span class="component">admin/</span>
+│   │   ├── <span class="component">UserTable.tsx</span>
+│   │   ├── <span class="component">RoleManagement.tsx</span>
+│   │   └── <span class="component">AnalyticsDashboard.tsx</span>
+│   └── <span class="component">ui/</span> (shadcn/ui components)
+│       ├── <span class="component">button.tsx</span>
+│       ├── <span class="component">card.tsx</span>
+│       ├── <span class="component">dialog.tsx</span>
+│       ├── <span class="component">table.tsx</span>
+│       └── <span class="component">...</span>
+├── <span class="folder">lib/</span>
+│   ├── <span class="file">api.ts</span>
+│   ├── <span class="file">axios.ts</span>
+│   ├── <span class="file">auth.ts</span>
+│   └── <span class="file">utils.ts</span>
+├── <span class="folder">hooks/</span>
+│   ├── <span class="file">useAuth.ts</span>
+│   ├── <span class="file">useCourses.ts</span>
+│   ├── <span class="file">useAssessments.ts</span>
+│   ├── <span class="file">useNotifications.ts</span>
+│   └── <span class="file">useUser.ts</span>
+├── <span class="folder">store/</span>
+│   ├── <span class="file">authStore.ts</span>
+│   ├── <span class="file">notificationStore.ts</span>
+│   └── <span class="file">uiStore.ts</span>
+├── <span class="folder">types/</span>
+│   ├── <span class="file">auth.ts</span>
+│   ├── <span class="file">course.ts</span>
+│   ├── <span class="file">assessment.ts</span>
+│   └── <span class="file">user.ts</span>
+└── <span class="folder">styles/</span>
+    └── <span class="file">globals.css</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>👥 Role-Based Page Access</h2>
+
+            <div class="flow-diagram">
+                <div class="role-card">
+                    <h3 class="admin-header">👨‍💼 ADMIN</h3>
+                    <ul class="page-list">
+                        <li>Dashboard Overview</li>
+                        <li>User Management</li>
+                        <li>All Courses</li>
+                        <li>All Enrollments</li>
+                        <li>All Announcements</li>
+                        <li>Analytics & Reports</li>
+                        <li>System Settings</li>
+                        <li>Role Assignment</li>
+                    </ul>
+                </div>
+
+                <div class="role-card">
+                    <h3 class="faculty-header">👨‍🏫 FACULTY</h3>
+                    <ul class="page-list">
+                        <li>Dashboard Overview</li>
+                        <li>My Courses</li>
+                        <li>Create Course</li>
+                        <li>Course Materials</li>
+                        <li>Create Assessment</li>
+                        <li>Submissions Review</li>
+                        <li>Grading Interface</li>
+                        <li>Course Enrollments</li>
+                        <li>Announcements</li>
+                        <li>My Profile</li>
+                    </ul>
+                </div>
+
+                <div class="role-card">
+                    <h3 class="student-header">👨‍🎓 STUDENT</h3>
+                    <ul class="page-list">
+                        <li>Dashboard Overview</li>
+                        <li>Browse Courses</li>
+                        <li>My Courses</li>
+                        <li>Course Materials</li>
+                        <li>My Assessments</li>
+                        <li>Submit Assignment</li>
+                        <li>My Submissions</li>
+                        <li>My Results</li>
+                        <li>Announcements</li>
+                        <li>My Profile</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Core Components Breakdown</h2>
+
+            <div class="component-grid">
+                <div class="component-card">
+                    <h4>🔐 Authentication</h4>
+                    <ul>
+                        <li>LoginForm</li>
+                        <li>RegisterForm</li>
+                        <li>AuthGuard (HOC)</li>
+                        <li>RoleGuard (HOC)</li>
+                        <li>SessionProvider</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>📐 Layout Components</h4>
+                    <ul>
+                        <li>DashboardLayout</li>
+                        <li>Sidebar (with role-based nav)</li>
+                        <li>Header (with user menu)</li>
+                        <li>Breadcrumbs</li>
+                        <li>MobileNav (responsive)</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>📚 Course Components</h4>
+                    <ul>
+                        <li>CourseCard</li>
+                        <li>CourseGrid/List</li>
+                        <li>CourseForm</li>
+                        <li>CourseDetails</li>
+                        <li>EnrollButton</li>
+                        <li>MaterialViewer</li>
+                        <li>VideoPlayer</li>
+                        <li>PDFViewer</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>📝 Assessment Components</h4>
+                    <ul>
+                        <li>AssessmentCard</li>
+                        <li>AssessmentForm</li>
+                        <li>SubmissionForm</li>
+                        <li>FileUpload</li>
+                        <li>DeadlineTimer</li>
+                        <li>GradingInterface</li>
+                        <li>BulkGrading</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>🎓 Results & Grading</h4>
+                    <ul>
+                        <li>ResultCard</li>
+                        <li>GradeTable</li>
+                        <li>PerformanceChart</li>
+                        <li>GradePieChart</li>
+                        <li>ProgressBar</li>
+                        <li>AcademicReport</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>📢 Announcements</h4>
+                    <ul>
+                        <li>AnnouncementCard</li>
+                        <li>AnnouncementForm</li>
+                        <li>AnnouncementBanner</li>
+                        <li>TargetSelector</li>
+                        <li>SchedulePublisher</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>🔔 Notifications</h4>
+                    <ul>
+                        <li>NotificationBell</li>
+                        <li>NotificationDropdown</li>
+                        <li>NotificationList</li>
+                        <li>NotificationItem</li>
+                        <li>MarkAsRead</li>
+                        <li>BulkActions</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>👤 User Management</h4>
+                    <ul>
+                        <li>UserTable</li>
+                        <li>UserCard</li>
+                        <li>RoleSelector</li>
+                        <li>UserForm</li>
+                        <li>ProfileCard</li>
+                        <li>AvatarUpload</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>📊 Analytics (Admin)</h4>
+                    <ul>
+                        <li>AnalyticsDashboard</li>
+                        <li>UserStatsCard</li>
+                        <li>CourseStatsCard</li>
+                        <li>EnrollmentChart</li>
+                        <li>ActivityTimeline</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>🎨 UI Components</h4>
+                    <ul>
+                        <li>Button variants</li>
+                        <li>Card/Dialog/Modal</li>
+                        <li>Table/DataGrid</li>
+                        <li>Form inputs</li>
+                        <li>Toast notifications</li>
+                        <li>Loading states</li>
+                        <li>Empty states</li>
+                        <li>Error boundaries</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔄 Application Flow & User Journeys</h2>
+
+            <h3>1️⃣ Authentication Flow</h3>
+            <div class="feature-box">
+                <strong>Landing Page</strong> → Login/Register → Role Detection → Route to Dashboard
+            </div>
+            <div class="api-endpoint">POST /api/v1/users/login</div>
+            <div class="api-endpoint">POST /api/v1/users/register</div>
+            <div class="api-endpoint">GET /api/v1/users/current-user</div>
+
+            <h3>2️⃣ Student Journey</h3>
+            <div class="feature-box">
+                <strong>Dashboard</strong> → Browse Courses → Enroll → View Materials → Submit Assessments → Check Results
+            </div>
+            <div class="api-endpoint">GET /api/v1/courses (browse all)</div>
+            <div class="api-endpoint">POST /api/v1/enrollments (enroll)</div>
+            <div class="api-endpoint">GET /api/v1/courses/:id/materials</div>
+            <div class="api-endpoint">POST /api/v1/submissions (draft)</div>
+            <div class="api-endpoint">PATCH /api/v1/submissions/:id/submit</div>
+            <div class="api-endpoint">GET /api/v1/results/user</div>
+
+            <h3>3️⃣ Faculty Journey</h3>
+            <div class="feature-box">
+                <strong>Dashboard</strong> → Create Course → Add Materials → Create Assessment → Review Submissions → Grade Students → Publish Results
+            </div>
+            <div class="api-endpoint">POST /api/v1/courses</div>
+            <div class="api-endpoint">POST /api/v1/courses/:id/materials</div>
+            <div class="api-endpoint">POST /api/v1/assessments</div>
+            <div class="api-endpoint">GET /api/v1/submissions/assessment/:id</div>
+            <div class="api-endpoint">POST /api/v1/results/single or /bulk</div>
+
+            <h3>4️⃣ Admin Journey</h3>
+            <div class="feature-box">
+                <strong>Dashboard</strong> → View Analytics → Manage Users → Update Roles → Monitor System → Create Global Announcements
+            </div>
+            <div class="api-endpoint">GET /api/v1/admin/users</div>
+            <div class="api-endpoint">PUT /api/v1/admin/users/:id/role</div>
+            <div class="api-endpoint">GET /api/v1/courses (all)</div>
+            <div class="api-endpoint">GET /api/v1/enrollments (all)</div>
+        </div>
+
+        <div class="section">
+            <h2>🗺️ Route Mapping Table</h2>
+            <table class="route-table">
+                <thead>
+                    <tr>
+                        <th>Route</th>
+                        <th>Access</th>
+                        <th>Description</th>
+                        <th>Key Features</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>/</td>
+                        <td>Public</td>
+                        <td>Landing page</td>
+                        <td>Hero, features, login/register</td>
+                    </tr>
+                    <tr>
+                        <td>/login</td>
+                        <td>Public</td>
+                        <td>Login page</td>
+                        <td>Email/password, role redirect</td>
+                    </tr>
+                    <tr>
+                        <td>/register</td>
+                        <td>Public</td>
+                        <td>Registration</td>
+                        <td>User creation, avatar upload</td>
+                    </tr>
+                    <tr>
+                        <td>/admin</td>
+                        <td>Admin</td>
+                        <td>Admin dashboard</td>
+                        <td>Stats, analytics, quick actions</td>
+                    </tr>
+                    <tr>
+                        <td>/admin/users</td>
+                        <td>Admin</td>
+                        <td>User management</td>
+                        <td>List, search, filter, role update</td>
+                    </tr>
+                    <tr>
+                        <td>/faculty</td>
+                        <td>Faculty</td>
+                        <td>Faculty dashboard</td>
+                        <td>My courses, pending grading</td>
+                    </tr>
+                    <tr>
+                        <td>/faculty/courses</td>
+                        <td>Faculty</td>
+                        <td>Course management</td>
+                        <td>Create, edit, delete courses</td>
+                    </tr>
+                    <tr>
+                        <td>/faculty/courses/:id</td>
+                        <td>Faculty</td>
+                        <td>Course details</td>
+                        <td>Materials, assessments, students</td>
+                    </tr>
+                    <tr>
+                        <td>/faculty/assessments/:id/submissions</td>
+                        <td>Faculty</td>
+                        <td>Review submissions</td>
+                        <td>List, download, grade</td>
+                    </tr>
+                    <tr>
+                        <td>/faculty/grading</td>
+                        <td>Faculty</td>
+                        <td>Grading interface</td>
+                        <td>Single/bulk grading</td>
+                    </tr>
+                    <tr>
+                        <td>/student</td>
+                        <td>Student</td>
+                        <td>Student dashboard</td>
+                        <td>Enrolled courses, deadlines</td>
+                    </tr>
+                    <tr>
+                        <td>/student/courses/browse</td>
+                        <td>Student</td>
+                        <td>Browse courses</td>
+                        <td>Search, filter, enroll</td>
+                    </tr>
+                    <tr>
+                        <td>/student/courses/:id</td>
+                        <td>Student</td>
+                        <td>Course view</td>
+                        <td>Materials, assessments, progress</td>
+                    </tr>
+                    <tr>
+                        <td>/student/assessments/:id/submit</td>
+                        <td>Student</td>
+                        <td>Submit assignment</td>
+                        <td>File upload, draft/submit</td>
+                    </tr>
+                    <tr>
+                        <td>/student/results</td>
+                        <td>Student</td>
+                        <td>View results</td>
+                        <td>Grades, feedback, analytics</td>
+                    </tr>
+                    <tr>
+                        <td>/notifications</td>
+                        <td>All</td>
+                        <td>Notification center</td>
+                        <td>Read, mark as read, delete</td>
+                    </tr>
+                    <tr>
+                        <td>/profile</td>
+                        <td>All</td>
+                        <td>User profile</td>
+                        <td>Edit info, change password</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>🎨 Design System & Best Practices</h2>
+
+            <h3>Color Scheme</h3>
+            <div class="tech-stack">
+                <span class="tech-badge" style="background: #dc2626; color: white;">Admin - Red</span>
+                <span class="tech-badge" style="background: #059669; color: white;">Faculty - Green</span>
+                <span class="tech-badge" style="background: #2563eb; color: white;">Student - Blue</span>
+            </div>
+
+            <h3>Key Features to Implement</h3>
+            <div class="component-grid">
+                <div class="component-card">
+                    <h4>🔒 Security</h4>
+                    <ul>
+                        <li>JWT token management</li>
+                        <li>Role-based access control</li>
+                        <li>Protected routes</li>
+                        <li>XSS protection</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>⚡ Performance</h4>
+                    <ul>
+                        <li>Server-side rendering</li>
+                        <li>Pagination</li>
+                        <li>Lazy loading</li>
+                        <li>Image optimization</li>
+                        <li>Code splitting</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>📱 Responsive Design</h4>
+                    <ul>
+                        <li>Mobile-first approach</li>
+                        <li>Collapsible sidebar</li>
+                        <li>Touch-friendly UI</li>
+                        <li>Adaptive layouts</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>♿ Accessibility</h4>
+                    <ul>
+                        <li>Semantic HTML</li>
+                        <li>ARIA labels</li>
+                        <li>Keyboard navigation</li>
+                        <li>Screen reader support</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>🔄 State Management</h4>
+                    <ul>
+                        <li>Zustand for global state</li>
+                        <li>TanStack Query for server state</li>
+                        <li>Form state with React Hook Form</li>
+                        <li>Optimistic updates</li>
+                    </ul>
+                </div>
+
+                <div class="component-card">
+                    <h4>🎯 UX Enhancements</h4>
+                    <ul>
+                        <li>Loading skeletons</li>
+                        <li>Toast notifications</li>
+                        <li>Confirmation dialogs</li>
+                        <li>Error boundaries</li>
+                        <li>Empty states</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Data Flow Architecture</h2>
+            <div class="feature-box">
+                <strong>Component</strong> → Custom Hook (useCourses, useAssessments) → TanStack Query → Axios Instance → Backend API → MongoDB
+            </div>
+            <div class="flow-arrow">⬇️</div>
+            <div class="feature-box">
+                <strong>Response</strong> → Cache (TanStack Query) → Update UI → Show Toast (success/error)
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🚀 Next Steps to Build</h2>
+            <ol style="line-height: 2; font-size: 1.1rem;">
+                <li>Initialize Next.js 14+ project with TypeScript</li>
+                <li>Install dependencies (Tailwind, shadcn/ui, TanStack Query, Zustand)</li>
+                <li>Set up folder structure as shown above</li>
+                <li>Configure NextAuth.js with JWT strategy</li>
+                <li>Create Axios instance with interceptors</li>
+                <li>Build authentication pages (login/register)</li>
+                <li>Implement role-based dashboard layouts</li>
+                <li>Create reusable components (course cards, forms)</li>
+                <li>Build role-specific pages (admin, faculty, student)</li>
+                <li>Implement API integration with custom hooks</li>
+                <li>Add notification system with real-time updates</li>
+                <li>Create grading and result viewing interfaces</li>
+                <li>Implement file upload for materials and submissions</li>
+                <li>Add analytics dashboard for admin</li>
+                <li>Test responsive design across devices</li>
+                <li>Deploy to Vercel/Netlify</li>
+            </ol>
+        </div>
+
+        <div class="section" style="background: #eff6ff; padding: 30px; border-radius: 8px; margin-top: 40px;">
+            <h2 style="color: #1e40af; border: none;">💡 Key Recommendations</h2>
+            <ul style="line-height: 2; font-size: 1.05rem;">
+                <li>✅ Use <span class="highlight">Server Components</span> where possible for better performance</li>
+                <li>✅ Implement <span class="highlight">middleware</span> for role-based route protection</li>
+                <li>✅ Use <span class="highlight">React Suspense</span> with loading fallbacks</li>
+                <li>✅ Create a <span class="highlight">design system</span> with consistent spacing and colors</li>
+                <li>✅ Add <span class="highlight">error tracking</span> (Sentry) in production</li>
+                <li>✅ Implement <span class="highlight">PWA features</span> for offline access</li>
+                <li>✅ Use <span class="highlight">WebSockets</span> for real-time notifications</li>
+                <li>✅ Add <span class="highlight">E2E testing</span> with Playwright</li>
+                <li>✅ Optimize images with Next.js <span class="highlight">Image component</span></li>
+                <li>✅ Use <span class="highlight">dynamic imports</span> for heavy components</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
