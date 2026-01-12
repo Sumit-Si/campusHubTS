@@ -7,6 +7,7 @@ export interface UserSchemaProps extends Document  {
     email: string;
     password: string;
     role: UserRole;
+    institution?: Types.ObjectId;
     avatar?: string;
     refreshToken?: string;
     deletedAt: Date | null;
@@ -40,6 +41,7 @@ export type CourseSchemaProps = {
     materials?: Types.ObjectId[];
     priceInPaise: number;
     creator: Types.ObjectId;
+    institution: Types.ObjectId;
     deletedAt: Date | null;
 }
 
@@ -61,6 +63,7 @@ export type MaterialSchemaProps = {
     order: number;
     duration?: number;
     creator: Types.ObjectId;
+    institution: Types.ObjectId;
     course: Types.ObjectId;
     isPreview: boolean;     // Free preview or not
     published: boolean;     // Published or not [Draft Vs Published]
@@ -71,6 +74,7 @@ export type MaterialSchemaProps = {
 export type EnrollmentSchemaProps = {
     user: Types.ObjectId;
     course: Types.ObjectId;
+    institution: Types.ObjectId;
     role: UserRole;
     // enrolledAt: Date;
     status: EnrollmentStatus;
@@ -85,6 +89,7 @@ export type AnnouncementSchemaProps = {
     type: AnnouncementTypesType;
     course?: Types.ObjectId;
     creator: Types.ObjectId;
+    institution: Types.ObjectId;
     publishedAt?: Date;
     expiresAt?: Date;
     attachments?: string[];
@@ -107,6 +112,7 @@ export type NotificationMetadata = {
 export type NotificationSchemaProps = {
     message: string;
     creator: Types.ObjectId;
+    institution: Types.ObjectId;
     type: NotificationType;
     recipients: Types.ObjectId[];
     metadata?: NotificationMetadata;
@@ -119,28 +125,30 @@ export type NotificationSchemaProps = {
 
 // Submission Schema Types
 export type SubmissionSchemaProps = {
-    user: Types.ObjectId,
-    assessment: Types.ObjectId,
-    submissionDate: Date | null,
-    submissionFiles?: string[],
-    marks?: number,  // Optional - only set after grading
-    feedback?: string,
-    status: SubmissionStatus,
-    result?: Types.ObjectId,  // Reference to Result after grading
-    deletedAt: Date | null,
+    user: Types.ObjectId;
+    assessment: Types.ObjectId;
+    institution: Types.ObjectId;
+    submissionDate: Date | null;
+    submissionFiles?: string[];
+    marks?: number;  // Optional - only set after grading
+    feedback?: string;
+    status: SubmissionStatus;
+    result?: Types.ObjectId;  // Reference to Result after grading
+    deletedAt: Date | null;
 }
 
 // Result Schema Types
 export type ResultSchemaProps = {
-    enrollment: Types.ObjectId,
-    assessment: Types.ObjectId,  // Reference to Assessment
-    submission: Types.ObjectId,  // Reference to Submission
-    course: Types.ObjectId,
-    user: Types.ObjectId,
-    creator: Types.ObjectId,
-    marks: number,
-    grade: ResultGrade,
-    academicYear: number,
-    remarks?: string,
-    deletedAt?: Date | null,
+    enrollment: Types.ObjectId;
+    assessment: Types.ObjectId;  // Reference to Assessment
+    submission: Types.ObjectId;  // Reference to Submission
+    course: Types.ObjectId;
+    user: Types.ObjectId;
+    creator: Types.ObjectId;
+    institution: Types.ObjectId;
+    marks: number;
+    grade: ResultGrade;
+    academicYear: number;
+    remarks?: string;
+    deletedAt?: Date | null;
 }

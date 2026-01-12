@@ -1,6 +1,6 @@
 import z from "zod"
 import { UserSchemaProps } from "../types/common.types"
-import { AnnouncementStatusEnum, AnnouncementTargetEnum, AnnouncementTypesEnum, AvailableAnnouncementStatus, AvailableAnnouncementTargetStatus, AvailableAnnouncementTypes, AvailableEnrollmentStatus, AvailableMaterialTypes, AvailableUserRoles, EnrollmentStatusEnum, MaterialTypesEnum, UserRolesEnum } from "../constants"
+import { AnnouncementStatusEnum, AnnouncementTargetEnum, AnnouncementTypesEnum, AvailableAnnouncementStatus, AvailableAnnouncementTargetStatus, AvailableAnnouncementTypes, AvailableEnrollmentStatus, AvailableInstitutionStatus, AvailableMaterialTypes, AvailableUserRoles, EnrollmentStatusEnum, InstitutionStatusEnum, MaterialTypesEnum, UserRolesEnum } from "../constants"
 import { Types } from "mongoose";
 import { AssessmentTypeEnum, AvailableAssessmentTypes } from "../models/assessment.model";
 
@@ -480,6 +480,72 @@ const createSingleResultValidator = z.object({
         .max(2100, "Academic year must be at most 2100"),
 });
 
+
+// ----- Institution Validations -----
+const createInstitutionValidator = z.object({
+    name: z.string()
+        .nonempty("InstituteName is required")
+        .min(3, "InstituteName must be at least 3 characters long")
+        .max(100, "InstituteName must be at most 100 characters long")
+        .trim(),
+
+    code: z.string()
+        .nonempty("InstituteCode is required")
+        .min(3, "InstituteCode must be at least 3 characters long")
+        .max(20, "InstituteCode must be at most 20 characters long")
+        .regex(/^[a-zA-Z0-9_]+$/, "InstituteCode must be alphanumeric and underscore")
+        .trim(),
+
+    academicYear: z.string()
+        .regex(/^20[5-9][0-9]-\d{2}$/, "Format: YYYY-YY (2025-2099)")
+        .transform((str) => {
+            const startYear = Number.parseInt(str.split('-')[0], 10);
+            if (Number.isNaN(startYear)) throw new Error("Invalid year");
+            return startYear;
+        })
+        .pipe(z.number().int().min(2025).max(2099, "Academic year must be at most 2099")),
+
+    email: z.email("Invalid email address")
+        .nonempty("Email is required")
+        .lowercase("Email must be in lowercase")
+        .trim(),
+
+    status: z.enum(AvailableInstitutionStatus)
+        .default(InstitutionStatusEnum.PENDING)
+        .optional(),
+
+});
+
+const institutionIdParamValidator = z.object({
+    id: z.string()
+        .nonempty("Institution id is required")
+        .refine(Types.ObjectId.isValid, {
+            message: "Invalid institution id"
+        })
+        .trim(),
+});
+
+const updateInstitutionValidator = z.object({
+    name: z.string()
+        .min(3, "InstituteName must be at least 3 characters long")
+        .max(100, "InstituteName must be at most 100 characters long")
+        .trim()
+        .optional(),
+
+    academicYear: z.string()
+        .regex(/^20[5-9][0-9]-\d{2}$/, "Format: YYYY-YY (2025-2099)")
+        .transform((str) => {
+            const startYear = Number.parseInt(str.split('-')[0], 10);
+            if (Number.isNaN(startYear)) throw new Error("Invalid year");
+            return startYear;
+        })
+        .pipe(z.number().int().min(2025).max(2099, "Academic year must be at most 2099"))
+        .optional(),
+
+    status: z.enum(AvailableInstitutionStatus)
+        .optional(),
+})
+
 export {
     registerValidator,
     loginValidator,
@@ -504,4 +570,7 @@ export {
     submissionIdParamValidator,
     createBulkResultsValidator,
     createSingleResultValidator,
+    createInstitutionValidator,
+    institutionIdParamValidator,
+    updateInstitutionValidator,
 }

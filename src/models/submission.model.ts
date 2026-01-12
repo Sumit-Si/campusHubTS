@@ -13,6 +13,11 @@ const submissionSchema = new Schema<SubmissionSchemaProps>({
         ref: "Assessment",
         required: true,
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Institution",
+    },
     submissionDate: {
         type: Date,
         default: null,

@@ -16,6 +16,7 @@ export type AssessmentSchemaProps = {
     dueDate: Date;
     course: Types.ObjectId;
     creator: Types.ObjectId;
+    institution: Types.ObjectId;
     assessmentFiles?: string[];
     maxMarks: number;
     type?: AssessmentType;
@@ -46,6 +47,11 @@ const assessmentSchema = new Schema<AssessmentSchemaProps>({
         ref: "User",
         required: true,
     },
+    institution: {
+            type: Schema.Types.ObjectId,
+            required: true,
+            ref: "Institution",
+        },
     assessmentFiles: [
         {
             type: String,

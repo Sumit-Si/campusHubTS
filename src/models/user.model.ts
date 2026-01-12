@@ -36,6 +36,10 @@ const userSchema = new Schema<UserSchemaProps>({
         enum: AvailableUserRoles,
         default: UserRolesEnum.STUDENT,
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        ref: "Institution",
+    },
     avatar: {
         type: String,
     },
@@ -69,7 +73,7 @@ userSchema.methods.generateAccessToken = function () {
 
     console.log("accessTokenSec: ", config.ACCESS_TOKEN_SECRET);
     console.log("accessTokenExpiry: ", config.ACCESS_TOKEN_EXPIRY);
-    
+
 
     const secret: Secret = config.ACCESS_TOKEN_SECRET;
     const expiresIn = config.ACCESS_TOKEN_EXPIRY as SignOptions["expiresIn"];

@@ -39,6 +39,7 @@ import resultRouter from "./routes/result.routes"
 import assessmentRouter from "./routes/assessment.routes";
 import submissionRouter from "./routes/submission.routes";
 import notificationRouter from "./routes/notification.routes";
+import institutionRouter from "./routes/institution.routes";
 import globalErrorHandler from "./utils/globalErrorHandler";
 
 app.use("/api/v1/healthCheck", healthCheckRouter);
@@ -51,6 +52,7 @@ app.use("/api/v1/results", resultRouter);
 app.use("/api/v1/assessments", assessmentRouter);
 app.use("/api/v1/submissions", submissionRouter);
 app.use("/api/v1/notifications", notificationRouter);
+app.use("/api/v1/institutions", institutionRouter);
 
 // Global Error Handling
 app.use(globalErrorHandler);

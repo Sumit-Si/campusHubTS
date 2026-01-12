@@ -16,6 +16,11 @@ const apiKeySchema = new Schema<ApiKeyScheamProps>({
         required: true,
         ref: "User",
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Institution",
+    },
     isDeleted: {
         type: Boolean,
         default: false,

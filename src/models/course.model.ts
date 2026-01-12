@@ -28,6 +28,11 @@ const courseSchema = new Schema<CourseSchemaProps>({
         ref: "User",
         required: true,
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Institution",
+    },
     deletedAt: {
         type: Date,
         default: null,

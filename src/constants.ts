@@ -3,6 +3,7 @@ type WhitelistOrigin = string[];
 export const WHITELIST_ORIGINS: WhitelistOrigin = [
     "http://localhost:5173",
     "http://localhost:5174",
+    "http://localhost:3000"
 ];
 
 export type UserRole = "admin" | "faculty" | "student";
@@ -119,3 +120,13 @@ export const ResultGradeEnum = {
 export const AvailableResultGrades = Object.values(ResultGradeEnum) as readonly ResultGrade[];
 
 export const DB_NAME = "campusHubTS" as const;
+
+// Institution constants
+export type InstitutionStatus = "PENDING" | "ACTIVE" | "SUSPENDED";
+export const InstitutionStatusEnum = {
+    PENDING: "PENDING",
+    ACTIVE: "ACTIVE",
+    SUSPENDED: "SUSPENDED",
+} as const;
+
+export const AvailableInstitutionStatus = Object.values(InstitutionStatusEnum) as readonly string[];

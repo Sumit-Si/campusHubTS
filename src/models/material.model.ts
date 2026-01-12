@@ -1,4 +1,4 @@
-import mongoose, {Schema} from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import { AvailableMaterialTypes, MaterialTypesEnum } from "../constants";
 import { MaterialSchemaProps } from "../types/common.types";
 
@@ -39,6 +39,11 @@ const materialSchema = new Schema<MaterialSchemaProps>({
         ref: "Course",
         required: true,
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Institution",
+    },
     tags: [String],
     order: {
         type: Number,
@@ -63,9 +68,9 @@ const materialSchema = new Schema<MaterialSchemaProps>({
     timestamps: true,
 });
 
-materialSchema.index({ course: 1, order: 1}, {unique: true});
-materialSchema.index({ course: 1, name: 1}, {unique: true});
-materialSchema.index({ course: 1, type: 1});
+materialSchema.index({ course: 1, order: 1 }, { unique: true });
+materialSchema.index({ course: 1, name: 1 }, { unique: true });
+materialSchema.index({ course: 1, type: 1 });
 
 const Material = mongoose.model<MaterialSchemaProps>("Material", materialSchema);
 

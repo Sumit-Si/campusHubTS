@@ -16,6 +16,7 @@ export type ApiKeyScheamProps = {
     key: string;
     expiresAt?: Date;
     createdBy: Types.ObjectId;
+    institution: Types.ObjectId;
     isDeleted: boolean;
     description?: string;
 }

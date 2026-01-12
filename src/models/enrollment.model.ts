@@ -14,6 +14,11 @@ const enrollmentSchema = new Schema<EnrollmentSchemaProps>({
         ref: "Course",
         required: true,
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Institution",
+    },
     role: {
         type: String,
         enum: AvailableUserRoles,

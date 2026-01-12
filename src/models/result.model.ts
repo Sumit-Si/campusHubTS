@@ -33,6 +33,11 @@ const resultSchema = new Schema<ResultSchemaProps>({
         ref: "User",
         required: true,
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Institution",
+    },
     marks: {
         type: Number,
         required: true,

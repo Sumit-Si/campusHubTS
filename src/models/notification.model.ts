@@ -14,6 +14,11 @@ const notificationSchema = new Schema<NotificationSchemaProps>({
         ref: "User",
         required: true,
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Institution",
+    },
     type: {
         type: String,
         enum: AvailableNotificationTypes,

@@ -28,6 +28,11 @@ const announcementSchema = new Schema<AnnouncementSchemaProps>({
         ref: "User",
         required: true,
     },
+    institution: {
+        type: Schema.Types.ObjectId,
+        required: true,
+        ref: "Institution",
+    },
     publishedAt: {
         type: Date,
     },
