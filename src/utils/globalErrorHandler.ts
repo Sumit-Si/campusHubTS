@@ -33,7 +33,8 @@ const globalErrorHandler = (error: unknown, req: Request, res: Response, next: N
             }];
 
         res.status(error.statusCode).json({
-            status: error.success,
+            success: error.success,
+            statusCode: error.statusCode,
             message: isProd && error.statusCode >= 500
                 ? "Something went wrong"
                 : error.message,
@@ -46,7 +47,8 @@ const globalErrorHandler = (error: unknown, req: Request, res: Response, next: N
 
     // Handle non-ApiError errors
     res.status(500).json({
-        status: false,
+        success: false,
+        statusCode: 500,
         message: isProd ? "Something went wrong" : "Internal Server Error",
         data: null,
         errors: error instanceof Error

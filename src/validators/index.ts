@@ -11,11 +11,13 @@ const registerValidator = z.object({
         .lowercase("Username must be in lowercase")
         .min(3, "Username must be at least 3 characters long")
         .max(50, "Username must be at most 50 characters long")
+        .regex(/^[a-zA-Z0-9_]+$/, "Username must be alphanumeric and underscore")
         .trim(),
 
     email: z.string()
         .nonempty("Email is required")
         .email("Invalid email address")
+        .max(100, "Email must be at most 100 characters long")
         .lowercase("Email must be in lowercase")
         .trim(),
 
@@ -28,7 +30,7 @@ const registerValidator = z.object({
     fullName: z.preprocess((val) => val === "" ? undefined : val, z.string()
         .trim()
         .min(3, "Full name must be at least 3 characters long")
-        .max(50, "Full name must be at most 50 characters long")
+        .max(100, "Full name must be at most 100 characters long")
         .optional()
     ),
 

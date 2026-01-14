@@ -85,8 +85,11 @@ const login = asyncHandler(async (req, res) => {
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
 
     const loggedInUser = await User.findById(user._id)
-        .select("-password -refreshToken");
+        .select("-password -refreshToken")
+        .populate("institution", "name onboarding status academic");
 
+    console.log("LoggedInUser: ", loggedInUser);
+    
 
     const options: CookieOptions = {
         httpOnly: true,
