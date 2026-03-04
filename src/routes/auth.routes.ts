@@ -36,7 +36,7 @@ router
 // refresh Access token
 router
     .route("/refresh-access-token")
-    .get(jwtVerify, refreshAccessToken);
+    .post(jwtVerify, refreshAccessToken);
 
 // current user
 router
